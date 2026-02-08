@@ -1,3 +1,12 @@
+# Rust / Tauri build output (DO NOT COMMIT)
+**/target/
+**/src-tauri/target/
+
+# Node
+node_modules/
+dist/
+build/
+
 # Python
 __pycache__/
 *.pyc
@@ -5,12 +14,14 @@ __pycache__/
 venv/
 .env
 
-# Node
-node_modules/
-dist/
-build/
-
 # OS / IDE
 .DS_Store
 .vscode/
 .idea/
+
+# Windows build artifacts
+*.exe
+*.pdb
+*.dll
+*.lib
+*.exp
