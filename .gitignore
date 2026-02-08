@@ -25,3 +25,6 @@ venv/
 *.dll
 *.lib
 *.exp
+# OAuth / Google credentials (NEVER COMMIT)
+gmail_lookup_service/credentials.json
+gmail_lookup_service/token.json
