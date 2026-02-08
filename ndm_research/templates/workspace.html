@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NDM Research Workspace</title>
+    <link rel="stylesheet" href="/research/static/research.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="top-bar">
+        <div class="title-block">
+          <div class="title">NDM Research</div>
+        </div>
+        <button id="backToSearch" class="pill-btn" type="button">
+          <span class="icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M14.5 6l-6 6 6 6"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </span>
+          Back to Search
+        </button>
+      </header>
+
+      <section class="search-row">
+        <div class="search-field">
+          <span class="icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle
+                cx="11"
+                cy="11"
+                r="7"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+              <path
+                d="M16.5 16.5L21 21"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+            </svg>
+          </span>
+          <input
+            id="searchInput"
+            placeholder="Search phone digits"
+            autocomplete="off"
+          />
+          <span class="status-dot" aria-hidden="true"></span>
+        </div>
+        <button id="searchBtn" class="action-btn" type="button">Search</button>
+        <button class="ghost-link" type="button">
+          Advanced
+          <span class="icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M12 8.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7z"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+              <path
+                d="M4 12h2M18 12h2M12 4v2M12 18v2M6.5 6.5l1.4 1.4M16.1 16.1l1.4 1.4M6.5 17.5l1.4-1.4M16.1 7.9l1.4-1.4"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+              />
+            </svg>
+          </span>
+        </button>
+      </section>
+
+      <section id="emptyStateCard" class="card empty-card hidden">
+        <div class="empty-title">No records found.</div>
+        <div class="empty-sub">
+          Create a research profile for <span id="emptyDigits">--</span> to
+          start adding JD, resume, and notes.
+        </div>
+        <button id="emptyCreateBtn" class="action-btn" type="button">
+          Create Profile
+        </button>
+      </section>
+
+      <section class="workspace">
+        <div class="content-grid">
+          <div class="column-left">
+            <section class="card vendor-card">
+              <div class="card-header">
+                <div class="vendor-main">
+                  <div class="vendor-title" id="vendorName">Vendor</div>
+                  <div class="vendor-sub" id="vendorPhone">--</div>
+                </div>
+                <button id="saveProfile" class="outline-btn" type="button">
+                  Save Profile
+                </button>
+              </div>
+              <div class="vendor-fields">
+                <label>
+                  Name
+                  <input id="vendorNameInput" placeholder="Vendor name" />
+                </label>
+                <label>
+                  Company
+                  <input id="vendorCompanyInput" placeholder="Company" />
+                </label>
+                <label>
+                  Title
+                  <input id="vendorTitleInput" placeholder="Title" />
+                </label>
+              </div>
+
+              <div class="parchment">
+                <div class="parchment-head">JD</div>
+                <textarea id="jdText" rows="6"></textarea>
+                <button id="saveJd" class="action-btn compact" type="button">
+                  Save Changes
+                </button>
+              </div>
+            </section>
+          </div>
+
+          <div class="column-right">
+            <section class="card resume-card">
+              <div class="card-header">
+                <div class="section-title">Key Resume Lines</div>
+                <button id="resumeTags" class="pill-outline" type="button">
+                  + Important Resume Items
+                </button>
+              </div>
+              <div class="parchment">
+                <textarea id="resumeText" rows="6"></textarea>
+                <button
+                  id="saveResume"
+                  class="action-btn compact"
+                  type="button"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </section>
+
+            <section class="card notes-card">
+              <div class="section-head">
+                <div class="section-title">Notes</div>
+                <div class="section-line"></div>
+              </div>
+              <div class="note-input">
+                <input id="newNoteText" placeholder="Add a new note..." />
+                <button id="addNoteBtn" class="outline-btn" type="button">
+                  + Add Note
+                </button>
+              </div>
+              <div id="notesList" class="notes-list"></div>
+            </section>
+
+            <section class="card recordings-card">
+              <div class="card-header">
+                <div class="section-title">Call Recordings</div>
+                <div class="pager">Page 1 of 1</div>
+              </div>
+              <div class="call-meta" id="callMeta">
+                <span>Last call:</span>
+                <strong id="summaryLastCall">--</strong>
+                <span>Total calls:</span>
+                <strong id="summaryCount">--</strong>
+              </div>
+              <div class="email-block">
+                <div class="section-title">Email Links</div>
+                <div id="emailsList" class="email-list"></div>
+              </div>
+              <div id="recordingsList" class="recordings-list"></div>
+              <div class="player-bar">
+                <div class="player-progress">
+                  <span class="progress-fill"></span>
+                </div>
+                <div class="player-meta">
+                  <span>0:15</span>
+                  <span class="volume">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path
+                        d="M4 10h4l5-4v12l-5-4H4z"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linejoin="round"
+                      />
+                      <path
+                        d="M17 9a4 4 0 0 1 0 6"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                      />
+                    </svg>
+                  </span>
+                  <span>0:30</span>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      window.__WORKSPACE__ = {{ workspace | tojson }};
+    </script>
+    <script src="/research/static/research.js"></script>
+  </body>
+</html>

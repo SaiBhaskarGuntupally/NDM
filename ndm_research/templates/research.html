@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NDM Research</title>
+    <link rel="stylesheet" href="/research/static/research.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="top-bar">
+        <div class="title-block">
+          <div class="title">NDM Research</div>
+        </div>
+        <button id="backToSearch" class="pill-btn" type="button">
+          <span class="icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M14.5 6l-6 6 6 6"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </span>
+          Back to Search
+        </button>
+      </header>
+
+      <section class="search-row">
+        <div class="search-field">
+          <span class="icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle
+                cx="11"
+                cy="11"
+                r="7"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+              <path
+                d="M16.5 16.5L21 21"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+            </svg>
+          </span>
+          <input
+            id="searchInput"
+            placeholder="Search phone digits"
+            autocomplete="off"
+          />
+          <span class="status-dot" aria-hidden="true"></span>
+        </div>
+        <button id="searchBtn" class="action-btn" type="button">Search</button>
+        <button class="ghost-link" type="button">
+          Advanced
+          <span class="icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M12 8.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7z"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+              <path
+                d="M4 12h2M18 12h2M12 4v2M12 18v2M6.5 6.5l1.4 1.4M16.1 16.1l1.4 1.4M6.5 17.5l1.4-1.4M16.1 7.9l1.4-1.4"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+              />
+            </svg>
+          </span>
+        </button>
+      </section>
+
+      <section class="results-panel">
+        <div class="section-head">
+          <div class="section-title">Results</div>
+          <div class="section-line"></div>
+          <button id="allNumbersBtn" class="pill-outline" type="button">
+            All Numbers
+          </button>
+        </div>
+
+        <div id="stateIdle" class="state-block">
+          <div class="hint-text">Search by phone, last10, or last4.</div>
+        </div>
+
+        <div id="stateResults" class="state-block hidden">
+          <div id="resultsList" class="results-list"></div>
+        </div>
+
+        <div id="stateAllNumbers" class="state-block hidden">
+          <div id="allNumbersList" class="results-list"></div>
+        </div>
+
+        <div id="stateEmpty" class="state-block hidden">
+          <div class="create-card">
+            <div class="create-text">
+              No records found for <span id="createProfileDigits">--</span>.
+              Create a research profile?
+            </div>
+            <button id="createProfileBtn" class="action-btn" type="button">
+              Create Profile
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script src="/research/static/research.js"></script>
+  </body>
+</html>

@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Voice Caller ID to Gmail Lookup",
+  "version": "0.1.0",
+  "description": "Detect incoming Google Voice calls and look up caller number in Gmail via local service.",
+  "permissions": [
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://voice.google.com/*",
+    "http://127.0.0.1:8787/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://voice.google.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+}
