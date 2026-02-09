@@ -19,11 +19,12 @@ const vendorNameInput = document.getElementById("vendorNameInput");
 const vendorCompanyInput = document.getElementById("vendorCompanyInput");
 const vendorTitleInput = document.getElementById("vendorTitleInput");
 const saveProfileBtn = document.getElementById("saveProfile");
-const jdText = document.getElementById("jdText");
-const saveJd = document.getElementById("saveJd");
-const resumeText = document.getElementById("resumeText");
-const saveResume = document.getElementById("saveResume");
-const newNoteText = document.getElementById("newNoteText");
+const jdEditorEl = document.getElementById("jdEditor");
+const jdToolbarEl = document.getElementById("jdToolbar");
+const resumeEditorEl = document.getElementById("resumeEditor");
+const resumeToolbarEl = document.getElementById("resumeToolbar");
+const noteEditorEl = document.getElementById("noteEditor");
+const noteToolbarEl = document.getElementById("noteToolbar");
 const addNoteBtn = document.getElementById("addNoteBtn");
 const notesList = document.getElementById("notesList");
 const summaryLastCall = document.getElementById("summaryLastCall");
@@ -35,6 +36,10 @@ const workspacePayload = window.__WORKSPACE__ || null;
 let activeDigits = workspacePayload?.phone_digits || "";
 let latestCallId = workspacePayload?.latest_call_id || null;
 let allNumbersLoaded = false;
+let jdQuill = null;
+let noteQuill = null;
+let resumeQuill = null;
+const noteEditors = new Map();
 
 function formatPhone(digits) {
   if (!digits) return "--";
@@ -56,6 +61,68 @@ function formatTimestamp(iso) {
     minute: "2-digit",
     hour12: false,
   }).format(dt);
+}
+
+function deriveJdTitle(jdTextValue) {
+  if (!jdTextValue) return "";
+  const lines = String(jdTextValue)
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+  if (!lines.length) return "";
+  return lines[0].length > 60 ? `${lines[0].slice(0, 57)}...` : lines[0];
+}
+
+function createQuillInstance(editorEl, toolbarEl, placeholder) {
+  if (!window.Quill || !editorEl) return null;
+  const quill = new Quill(editorEl, {
+    theme: "snow",
+    placeholder: placeholder || "",
+    modules: {
+      history: {
+        delay: 1200,
+        maxStack: 100,
+        userOnly: true,
+      },
+      toolbar: toolbarEl
+        ? {
+            container: toolbarEl,
+            handlers: {
+              undo: function () {
+                this.quill.history.undo();
+              },
+              redo: function () {
+                this.quill.history.redo();
+              },
+            },
+          }
+        : false,
+    },
+  });
+  return quill;
+}
+
+function getQuillHtml(quill) {
+  if (!quill) return "";
+  const html = quill.root.innerHTML || "";
+  return html === "<p><br></p>" ? "" : html;
+}
+
+function setQuillHtml(quill, html) {
+  if (!quill) return;
+  if (!html) {
+    quill.setText("");
+    return;
+  }
+  quill.clipboard.dangerouslyPasteHTML(html);
+}
+
+function debounceSave(handler, wait = 600) {
+  let timer = null;
+  return () => {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(handler, wait);
+  };
 }
 
 function normalizeQuery(value) {
@@ -176,6 +243,7 @@ function renderResultRow(item, container) {
 function renderNotes(items) {
   if (!notesList) return;
   notesList.innerHTML = "";
+  noteEditors.clear();
   if (!items || items.length === 0) {
     setEmpty(notesList, "No notes yet.");
     return;
@@ -188,8 +256,35 @@ function renderNotes(items) {
     meta.className = "result-meta";
     meta.textContent = `${formatTimestamp(note.ts)}${note.source === "call" ? " · call" : ""}`;
 
-    const textarea = document.createElement("textarea");
-    textarea.value = note.note_text || "";
+    const editorWrap = document.createElement("div");
+    editorWrap.className = "ndm-quill";
+
+    const toolbar = document.createElement("div");
+    toolbar.className = "ndm-quill-toolbar ql-toolbar";
+    toolbar.innerHTML = `
+      <span class="ql-formats">
+        <button class="ql-bold" type="button"></button>
+        <button class="ql-italic" type="button"></button>
+        <button class="ql-underline" type="button"></button>
+      </span>
+      <span class="ql-formats">
+        <button class="ql-list" type="button" value="bullet"></button>
+        <button class="ql-list" type="button" value="ordered"></button>
+      </span>
+      <span class="ql-formats">
+        <button class="ql-link" type="button"></button>
+        <button class="ql-clean" type="button"></button>
+      </span>
+      <span class="ql-formats">
+        <button class="ql-undo" type="button" aria-label="Undo">↺</button>
+        <button class="ql-redo" type="button" aria-label="Redo">↻</button>
+      </span>
+    `;
+
+    const editor = document.createElement("div");
+    editor.className = "ndm-quill-editor";
+    editorWrap.appendChild(toolbar);
+    editorWrap.appendChild(editor);
 
     const actions = document.createElement("div");
     actions.className = "note-row-actions";
@@ -198,10 +293,12 @@ function renderNotes(items) {
     editBtn.className = "note-btn";
     editBtn.textContent = "Edit";
     editBtn.addEventListener("click", async () => {
+      const quill = noteEditors.get(note.id);
+      const noteHtml = quill ? getQuillHtml(quill) : editor.innerHTML;
       await fetchJson(`/research/note/${note.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ note_text: textarea.value.trim() }),
+        body: JSON.stringify({ note_text: noteHtml.trim() }),
       });
       await refreshWorkspace();
     });
@@ -219,9 +316,17 @@ function renderNotes(items) {
     actions.appendChild(deleteBtn);
 
     item.appendChild(meta);
-    item.appendChild(textarea);
+    item.appendChild(editorWrap);
     item.appendChild(actions);
     notesList.appendChild(item);
+
+    const quill = createQuillInstance(editor, toolbar);
+    if (quill) {
+      setQuillHtml(quill, note.note_text || "");
+      noteEditors.set(note.id, quill);
+    } else {
+      editor.innerHTML = note.note_text || "";
+    }
   });
 }
 
@@ -344,8 +449,12 @@ function renderWorkspace(payload) {
     vendorCompanyInput.value = payload.profile?.vendor_company || "";
   if (vendorTitleInput)
     vendorTitleInput.value = payload.profile?.vendor_title || "";
-  if (jdText) jdText.value = payload.jd_text || "";
-  if (resumeText) resumeText.value = payload.resume_text || "";
+  if (jdQuill) {
+    setQuillHtml(jdQuill, payload.jd_text || "");
+  }
+  if (resumeQuill) {
+    setQuillHtml(resumeQuill, payload.resume_text || "");
+  }
   if (summaryLastCall)
     summaryLastCall.textContent = formatTimestamp(payload.last_call_ts);
   if (summaryCount) summaryCount.textContent = payload.call_count || 0;
@@ -434,49 +543,111 @@ backBtn?.addEventListener("click", () => {
 
 saveProfileBtn?.addEventListener("click", async () => {
   if (!activeDigits) return;
-  await fetchJson(`/research/profile/${encodeURIComponent(activeDigits)}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      vendor_name: vendorNameInput?.value || "",
-      vendor_company: vendorCompanyInput?.value || "",
-      vendor_title: vendorTitleInput?.value || "",
-    }),
-  });
-  await refreshWorkspace();
-});
-
-saveJd?.addEventListener("click", async () => {
-  if (!activeDigits) return;
-  await fetchJson(`/research/jd/${encodeURIComponent(activeDigits)}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ jd_text: jdText?.value || "" }),
-  });
-  await refreshWorkspace();
-});
-
-saveResume?.addEventListener("click", async () => {
-  if (!activeDigits) return;
-  await fetchJson(`/research/resume/${encodeURIComponent(activeDigits)}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ resume_text: resumeText?.value || "" }),
-  });
+  const payload = {
+    phone_digits: activeDigits,
+    name: vendorNameInput?.value || "",
+    company: vendorCompanyInput?.value || "",
+    title: vendorTitleInput?.value || "",
+  };
+  if (window.ProfileStore?.saveProfile) {
+    await window.ProfileStore.saveProfile(payload, {
+      baseUrl: window.__PROFILE_API_BASE__ || "/research",
+    });
+  } else {
+    await fetchJson(`/research/profile/${encodeURIComponent(activeDigits)}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        vendor_name: vendorNameInput?.value || "",
+        vendor_company: vendorCompanyInput?.value || "",
+        vendor_title: vendorTitleInput?.value || "",
+      }),
+    });
+  }
   await refreshWorkspace();
 });
 
 addNoteBtn?.addEventListener("click", async () => {
-  const text = newNoteText?.value.trim();
+  const text = noteQuill ? noteQuill.getText().trim() : "";
+  const html = noteQuill ? getQuillHtml(noteQuill) : "";
   if (!text || !activeDigits) return;
-  await fetchJson("/research/note", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ phone_digits: activeDigits, note_text: text }),
-  });
-  newNoteText.value = "";
+  if (window.ProfileStore?.saveNote) {
+    await window.ProfileStore.saveNote(activeDigits, html, {
+      baseUrl: window.__PROFILE_API_BASE__ || "/research",
+    });
+  } else {
+    await fetchJson("/research/note", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone_digits: activeDigits, note_text: html }),
+    });
+  }
+  if (noteQuill) noteQuill.setText("");
   await refreshWorkspace();
 });
+
+jdQuill = createQuillInstance(
+  jdEditorEl,
+  jdToolbarEl,
+  "Add JD details here...",
+);
+resumeQuill = createQuillInstance(
+  resumeEditorEl,
+  resumeToolbarEl,
+  "Add key resume lines...",
+);
+noteQuill = createQuillInstance(
+  noteEditorEl,
+  noteToolbarEl,
+  "Add a new note...",
+);
+
+if (jdQuill) {
+  jdQuill.on(
+    "text-change",
+    debounceSave(async () => {
+      if (!activeDigits) return;
+      const html = getQuillHtml(jdQuill);
+      const payload = { phone_digits: activeDigits, jd_text: html };
+      if (window.ProfileStore?.saveProfile) {
+        await window.ProfileStore.saveProfile(payload, {
+          baseUrl: window.__PROFILE_API_BASE__ || "/research",
+        });
+      } else {
+        await fetchJson(`/research/jd/${encodeURIComponent(activeDigits)}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ jd_text: html }),
+        });
+      }
+    }),
+  );
+}
+
+if (resumeQuill) {
+  resumeQuill.on(
+    "text-change",
+    debounceSave(async () => {
+      if (!activeDigits) return;
+      const html = getQuillHtml(resumeQuill);
+      const payload = { phone_digits: activeDigits, resume_text: html };
+      if (window.ProfileStore?.saveProfile) {
+        await window.ProfileStore.saveProfile(payload, {
+          baseUrl: window.__PROFILE_API_BASE__ || "/research",
+        });
+      } else {
+        await fetchJson(
+          `/research/resume/${encodeURIComponent(activeDigits)}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ resume_text: html }),
+          },
+        );
+      }
+    }),
+  );
+}
 
 if (workspacePayload) {
   renderWorkspace(workspacePayload);

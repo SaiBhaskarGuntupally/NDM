@@ -15,6 +15,9 @@ SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
 DEFAULT_CREDENTIALS_PATH = str(get_credentials_path())
 DEFAULT_TOKEN_PATH = str(get_token_path())
 
+_MAILBOX_EMAIL: Optional[str] = None
+_ACCOUNT_INDEX: str = ""
+
 
 def get_gmail_service(
     credentials_path: str = DEFAULT_CREDENTIALS_PATH,
@@ -50,6 +53,7 @@ def _header_value(headers: List[Dict[str, str]], name: str) -> str:
 
 def search_messages(query: str, max_results: int = 5) -> List[Dict[str, str]]:
     service = get_gmail_service()
+    mailbox_email, account_index = get_mailbox_context(service)
 
     resp = (
         service.users()
@@ -73,7 +77,7 @@ def search_messages(query: str, max_results: int = 5) -> List[Dict[str, str]]:
                 userId="me",
                 id=msg_id,
                 format="metadata",
-                metadataHeaders=["Subject", "From", "Date"],
+                metadataHeaders=["Subject", "From", "Date", "Message-Id"],
             )
             .execute()
         )
@@ -82,6 +86,7 @@ def search_messages(query: str, max_results: int = 5) -> List[Dict[str, str]]:
         subject = _header_value(headers, "Subject")
         sender = _header_value(headers, "From")
         date = _header_value(headers, "Date")
+        rfc_message_id = _header_value(headers, "Message-Id")
         snippet = detail.get("snippet", "")
 
         results.append(
@@ -90,11 +95,27 @@ def search_messages(query: str, max_results: int = 5) -> List[Dict[str, str]]:
                 "from": sender,
                 "date": date,
                 "snippet": snippet,
-                "link": f"https://mail.google.com/mail/u/0/#inbox/{msg_id}",
+                "gmail_message_id": msg_id,
+                "rfc_message_id": rfc_message_id,
+                "mailbox_email": mailbox_email,
+                "account_index": account_index,
+                "link": "",
             }
         )
 
     return results
+
+
+def get_mailbox_context(service=None) -> tuple[str, str]:
+    global _MAILBOX_EMAIL, _ACCOUNT_INDEX
+    if _MAILBOX_EMAIL is None:
+        if service is None:
+            service = get_gmail_service()
+        profile = service.users().getProfile(userId="me").execute()
+        _MAILBOX_EMAIL = profile.get("emailAddress", "") or ""
+    if not _ACCOUNT_INDEX:
+        _ACCOUNT_INDEX = os.getenv("NDM_GMAIL_ACCOUNT_INDEX", "").strip()
+    return _MAILBOX_EMAIL or "", _ACCOUNT_INDEX
 
 
 def test_search():

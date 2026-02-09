@@ -9,6 +9,7 @@ import sqlite3
 from fastapi import Depends, FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from shared import profile_store
 from fastapi.templating import Jinja2Templates
 
 from ndm_research import db
@@ -23,6 +24,7 @@ app = FastAPI(title="NDM Research")
 RESOURCE_DIR = Path(__file__).parent
 TEMPLATES_DIR = RESOURCE_DIR / "templates"
 STATIC_DIR = RESOURCE_DIR / "static"
+SHARED_STATIC_DIR = RESOURCE_DIR.parent / "shared" / "static"
 
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
@@ -91,6 +93,26 @@ def research_home(request: Request):
         "research.html",
         {"request": request},
     )
+
+@app.get("/research/profile-data/{digits}")
+def research_profile_data(digits: str):
+    profile = profile_store.load_profile(digits)
+    return {"ok": True, "profile": profile}
+
+
+@app.put("/research/profile-data/{digits}")
+async def research_profile_update(digits: str, request: Request):
+    payload = await request.json()
+    payload["phone_digits"] = digits
+    profile = profile_store.save_profile(payload)
+    return {"ok": True, "profile": profile}
+
+
+@app.post("/research/profile-data/{digits}/notes")
+async def research_profile_note(digits: str, request: Request):
+    payload = await request.json()
+    notes = profile_store.add_note(digits, payload.get("note_text", ""))
+    return {"ok": True, "notes": notes}
 
 
 @app.get("/research/search")
@@ -391,3 +413,5 @@ def delete_call(call_id: int, conn: sqlite3.Connection = Depends(get_db_conn)):
 
 
 app.mount("/research/static", StaticFiles(directory=str(STATIC_DIR)), name="research_static")
+if SHARED_STATIC_DIR.exists():
+    app.mount("/shared", StaticFiles(directory=SHARED_STATIC_DIR), name="shared-static")

@@ -93,6 +93,35 @@ function envelopeIcon(color) {
   `;
 }
 
+function buildGmailOpenUrl({
+  gmailMessageId,
+  rfcMessageId,
+  mailboxEmail,
+  accountIndex,
+}) {
+  const base = "https://mail.google.com/mail";
+  const authUser = mailboxEmail
+    ? `?authuser=${encodeURIComponent(mailboxEmail)}`
+    : "";
+  const accountPath =
+    !authUser && accountIndex !== "" && accountIndex != null
+      ? `/u/${encodeURIComponent(accountIndex)}`
+      : "";
+
+  if (gmailMessageId) {
+    const query = `#all/${encodeURIComponent(gmailMessageId)}`;
+    return `${base}${accountPath}${authUser}${query}`;
+  }
+
+  if (rfcMessageId) {
+    const normalized = String(rfcMessageId).trim().replace(/^<|>$/g, "");
+    const query = `#search/rfc822msgid:${encodeURIComponent(normalized)}`;
+    return `${base}${accountPath}${authUser}${query}`;
+  }
+
+  return "";
+}
+
 function renderCaller(info) {
   const number = formatPhoneDigits(info.phone_digits || "");
   callerInfoEl.innerHTML = `
@@ -142,17 +171,22 @@ function renderNotes(items) {
 }
 
 function renderOpportunity(op) {
+  if (!talkTrackEl) return;
   if (!op) {
-    jdTitleEl.textContent = "—";
-    jdTextEl.textContent = "No JD pinned.";
-    resumeMatchEl.textContent = "No resume match yet.";
     talkTrackEl.textContent = "No talk track yet.";
     return;
   }
-  jdTitleEl.textContent = op.jd_title || "—";
-  jdTextEl.textContent = op.jd_text || "No JD pinned.";
-  resumeMatchEl.textContent = op.resume_match_text || "No resume match yet.";
   talkTrackEl.textContent = op.talk_track_text || "No talk track yet.";
+}
+
+async function applyProfile(phoneDigits) {
+  if (!window.ProfileStore?.loadProfile) return;
+  const profile = await window.ProfileStore.loadProfile(phoneDigits, {
+    baseUrl: window.__PROFILE_API_BASE__ || "",
+  });
+  if (window.ProfileStore?.renderOnCall) {
+    window.ProfileStore.renderOnCall(profile);
+  }
 }
 
 function renderEmails(items) {
@@ -174,7 +208,16 @@ function renderEmails(items) {
     const sender = email.from || email.from_addr || "Unknown";
     const subject = email.subject || "(no subject)";
     const date = email.date || "";
-    const link = email.link || email.gmail_link || "";
+    const link =
+      buildGmailOpenUrl({
+        gmailMessageId: email.gmail_message_id || email.gmailMessageId,
+        rfcMessageId: email.rfc_message_id || email.rfcMessageId,
+        mailboxEmail: email.mailbox_email || email.mailboxEmail,
+        accountIndex: email.account_index || email.accountIndex,
+      }) ||
+      email.link ||
+      email.gmail_link ||
+      "";
     const div = document.createElement("div");
     div.className = "email-row";
     div.innerHTML = `
@@ -186,7 +229,9 @@ function renderEmails(items) {
       <div class="email-time">${date}</div>
     `;
     if (link) {
-      div.addEventListener("click", () => window.open(link, "_blank"));
+      div.addEventListener("click", () =>
+        window.open(link, "_blank", "noopener,noreferrer"),
+      );
     }
     emailsRecentEl.appendChild(div);
   });
@@ -201,7 +246,16 @@ function renderEmails(items) {
     const sender = email.from || email.from_addr || "Unknown";
     const subject = email.subject || "(no subject)";
     const date = email.date || "";
-    const link = email.link || email.gmail_link || "";
+    const link =
+      buildGmailOpenUrl({
+        gmailMessageId: email.gmail_message_id || email.gmailMessageId,
+        rfcMessageId: email.rfc_message_id || email.rfcMessageId,
+        mailboxEmail: email.mailbox_email || email.mailboxEmail,
+        accountIndex: email.account_index || email.accountIndex,
+      }) ||
+      email.link ||
+      email.gmail_link ||
+      "";
     const div = document.createElement("div");
     div.className = "email-row";
     div.innerHTML = `
@@ -213,7 +267,9 @@ function renderEmails(items) {
       <div class="email-time">${date}</div>
     `;
     if (link) {
-      div.addEventListener("click", () => window.open(link, "_blank"));
+      div.addEventListener("click", () =>
+        window.open(link, "_blank", "noopener,noreferrer"),
+      );
     }
     emailsRelatedEl.appendChild(div);
   });
@@ -266,7 +322,7 @@ async function loadWorkspace(phoneDigits) {
   renderCaller({ phone_digits: phoneDigits, display_name: data.display_name });
   setSeenBadge(false);
   await fetchCallHistory(phoneDigits);
-  renderNotes(data.notes || []);
+  await applyProfile(phoneDigits);
   renderOpportunity(data.opportunity || null);
   if (!renderGmailFromState()) {
     renderEmails(data.emails || []);
@@ -288,14 +344,13 @@ async function fetchCallHistory(phoneDigits) {
 
 async function saveNote() {
   const text = noteInput.value.trim();
-  if (!text || !currentCallId) return;
-  const res = await fetch("/notes", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ call_id: currentCallId, note_text: text }),
-  });
-  const data = await res.json();
-  renderNotes(data.notes || []);
+  if (!text || !currentPhoneDigits) return;
+  if (window.ProfileStore?.saveNote) {
+    await window.ProfileStore.saveNote(currentPhoneDigits, text, {
+      baseUrl: window.__PROFILE_API_BASE__ || "",
+    });
+    await applyProfile(currentPhoneDigits);
+  }
   noteInput.value = "";
 }
 
@@ -337,7 +392,7 @@ evtSource.addEventListener("incoming_call_workspace", (event) => {
   renderCaller(data);
   setSeenBadge(false);
   fetchCallHistory(data.phone_digits);
-  renderNotes(data.notes || []);
+  applyProfile(data.phone_digits);
   renderOpportunity(data.opportunity || null);
   if (!renderGmailFromState()) {
     renderEmails(data.emails || []);

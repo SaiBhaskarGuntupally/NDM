@@ -7,184 +7,197 @@
     <link rel="stylesheet" href="/static/ui.css" />
   </head>
   <body>
-    <div class="ndm-shell">
-      <main class="app-panel">
-        <header class="app-header">
-          <div class="ndm-header-left">
-            <div class="ndm-signal-badge"></div>
-            <div class="ndm-title-block">
-              <div class="ndm-title">NDM</div>
-              <div class="ndm-subtitle">NumberDorikindi Machaa</div>
-              <div class="ndm-tagline">Local Call Intelligence</div>
-            </div>
-          </div>
-          <div class="status-pill">
-            <span class="status-dot"></span>
-            <span>Listening...</span>
-          </div>
-        </header>
-
-        <div class="app-content">
-          <section class="col-left">
-            <div class="card caller-card" id="callerInfo">
-              <div class="caller-dash">—</div>
-              <div class="caller-number">—</div>
-              <div class="caller-subtitle">Machaa, number dorikindi.</div>
-            </div>
-
-            <div class="card">
-              <div class="section-title gold-title">
-                Recent Dorikina Numbers
+    <div class="ndm-root">
+      <div class="ndm-sparkle-layer" aria-hidden="true"></div>
+      <div class="ndm-vignette" aria-hidden="true"></div>
+      <div class="ndm-shell">
+        <main class="app-panel">
+          <header class="app-header">
+            <div class="ndm-header-left">
+              <div class="ndm-signal-badge"></div>
+              <div class="ndm-title-block">
+                <div class="ndm-title">NDM</div>
+                <div class="ndm-subtitle">NumberDorikindi Machaa</div>
+                <div class="ndm-tagline">Local Call Intelligence</div>
               </div>
-              <div class="scroll-area" id="recentCallsList">
-                <div id="recentCalls" class="empty-text">
-                  Evaru call cheyyaledu<br />
-                  machaa...
+            </div>
+            <div class="status-pill">
+              <span class="status-dot"></span>
+              <span>Listening...</span>
+            </div>
+          </header>
+
+          <div class="app-content">
+            <section class="col-left">
+              <div class="card caller-card" id="callerInfo">
+                <div class="caller-dash">—</div>
+                <div class="caller-number">—</div>
+                <div class="caller-subtitle">Machaa, number dorikindi.</div>
+                <div class="caller-meta" id="callerMeta">—</div>
+              </div>
+
+              <div class="card">
+                <div class="section-title gold-title">
+                  Recent Dorikina Numbers
+                </div>
+                <div class="scroll-area" id="recentCallsList">
+                  <div id="recentCalls" class="empty-text">
+                    Evaru call cheyyaledu<br />
+                    machaa...
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div class="card notes-card">
-              <div class="section-title with-icon gold-title">
-                <span class="icon-note" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <rect
-                      x="5"
-                      y="4"
-                      width="14"
-                      height="16"
-                      rx="2"
-                      fill="none"
-                      stroke="#FFC83D"
-                      stroke-width="2"
-                    />
-                    <path
-                      d="M8 8h8M8 12h8M8 16h6"
-                      stroke="#FFC83D"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                    />
-                  </svg>
-                </span>
-                <span>Machaa Notes</span>
-              </div>
-              <div id="notes"></div>
-              <textarea id="noteInput" placeholder="Note etu bro?"></textarea>
-              <div class="note-actions">
-                <button id="saveNote" class="note-btn">
-                  <span class="icon-check" aria-hidden="true">
+              <div class="card notes-card">
+                <div class="section-title with-icon gold-title">
+                  <span class="icon-note" aria-hidden="true">
                     <svg viewBox="0 0 24 24" aria-hidden="true">
-                      <circle
-                        cx="12"
-                        cy="12"
-                        r="9"
+                      <rect
+                        x="5"
+                        y="4"
+                        width="14"
+                        height="16"
+                        rx="2"
                         fill="none"
-                        stroke="#3AFFC3"
+                        stroke="#FFC83D"
                         stroke-width="2"
                       />
                       <path
-                        d="M8.5 12.5l2.5 2.5 4.8-5"
-                        fill="none"
-                        stroke="#3AFFC3"
+                        d="M8 8h8M8 12h8M8 16h6"
+                        stroke="#FFC83D"
                         stroke-width="2"
                         stroke-linecap="round"
-                        stroke-linejoin="round"
                       />
                     </svg>
                   </span>
-                  Note Save Aindi
+                  <span>Machaa Notes</span>
+                </div>
+                <div id="notes"></div>
+                <textarea id="noteInput" placeholder="Note etu bro?"></textarea>
+                <div class="note-actions">
+                  <button id="saveNote" class="note-btn">
+                    <span class="icon-check" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle
+                          cx="12"
+                          cy="12"
+                          r="9"
+                          fill="none"
+                          stroke="#3AFFC3"
+                          stroke-width="2"
+                        />
+                        <path
+                          d="M8.5 12.5l2.5 2.5 4.8-5"
+                          fill="none"
+                          stroke="#3AFFC3"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                    </span>
+                    Note Save Aindi
+                  </button>
+                  <span class="kbd-pill">(Ctrl+Enter)</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="col-right">
+              <div class="tabs">
+                <button class="tab active" data-tab="emails">
+                  Emails Dorikayi
                 </button>
-                <span class="kbd-pill">(Ctrl+Enter)</span>
+                <button class="tab" data-tab="jd">JD Pin Chesam</button>
               </div>
-            </div>
-          </section>
 
-          <section class="col-right">
-            <div class="tabs">
-              <button class="tab active" data-tab="emails">
-                Emails Dorikayi
-              </button>
-              <button class="tab" data-tab="jd">JD Pin Chesam</button>
-            </div>
-
-            <div class="tab-content active" id="tab-emails">
-              <div class="card list-card">
-                <div class="section-title row-title">
-                  <span>Recent Dorikina Numbers</span>
-                  <span class="chevron" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                      <path
-                        d="M9 6l6 6-6 6"
-                        fill="none"
-                        stroke="rgba(245,247,250,0.6)"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      />
-                    </svg>
-                  </span>
+              <div class="tab-content active" id="tab-emails">
+                <div class="card list-card">
+                  <div class="section-title row-title">
+                    <span>Recent Dorikina Numbers</span>
+                    <span class="chevron" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path
+                          d="M9 6l6 6-6 6"
+                          fill="none"
+                          stroke="rgba(245,247,250,0.6)"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                    </span>
+                  </div>
+                  <div class="scroll-area" id="emailsRecentList">
+                    <div id="emailsRecent"></div>
+                  </div>
                 </div>
-                <div class="scroll-area" id="emailsRecentList">
-                  <div id="emailsRecent"></div>
+
+                <div class="card list-card">
+                  <div class="section-title">Related Emails</div>
+                  <div class="scroll-area" id="emailsRelatedList">
+                    <div id="emailsRelated"></div>
+                  </div>
                 </div>
               </div>
 
-              <div class="card list-card">
-                <div class="section-title">Related Emails</div>
-                <div class="scroll-area" id="emailsRelatedList">
-                  <div id="emailsRelated"></div>
+              <div class="tab-content" id="tab-jd">
+                <div class="card">
+                  <div class="section-title">JD Pin Chesam</div>
+                  <div id="jdTitle">—</div>
+                  <div class="text-block" id="jdText">No JD pinned.</div>
+                </div>
+                <div class="card">
+                  <div class="section-title">Resume Match</div>
+                  <div class="text-block" id="resumeMatch">
+                    No resume match yet.
+                  </div>
+                </div>
+                <div class="card">
+                  <div class="section-title">Talk Track</div>
+                  <div class="text-block" id="talkTrack">
+                    No talk track yet.
+                  </div>
                 </div>
               </div>
-            </div>
-
-            <div class="tab-content" id="tab-jd">
-              <div class="card">
-                <div class="section-title">JD Pin Chesam</div>
-                <div id="jdTitle">—</div>
-                <div class="text-block" id="jdText">No JD pinned.</div>
-              </div>
-              <div class="card">
-                <div class="section-title">Resume Match</div>
-                <div class="text-block" id="resumeMatch">
-                  No resume match yet.
-                </div>
-              </div>
-              <div class="card">
-                <div class="section-title">Talk Track</div>
-                <div class="text-block" id="talkTrack">No talk track yet.</div>
-              </div>
-            </div>
-          </section>
-        </div>
-
-        <div id="toast" class="ndm-toast hidden">
-          <div class="toast-left">
-            <!-- Removed image: no logo shown on top -->
+            </section>
           </div>
-          <div class="toast-text">
-            <div>Ring ochindi machaa 👀</div>
-            <div class="toast-sub">+1-205-240-3989. Gmail lo dorikindi ✉️</div>
-          </div>
-          <button id="toastClose" class="toast-close" aria-label="Close">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path
-                d="M6 6l12 12M18 6l-12 12"
-                fill="none"
-                stroke="rgba(245,247,250,0.7)"
-                stroke-width="2"
-                stroke-linecap="round"
-              />
-            </svg>
-          </button>
-        </div>
 
-        <div class="header-actions hidden">
-          <div class="status" id="status">Waiting for calls…</div>
-          <button id="stopRecording" disabled>Stop Recording</button>
-        </div>
-      </main>
+          <div id="toast" class="ndm-toast hidden">
+            <div class="toast-left">
+              <!-- Removed image: no logo shown on top -->
+            </div>
+            <div class="toast-text">
+              <div>Ring ochindi machaa 👀</div>
+              <div class="toast-sub">
+                +1-205-240-3989. Gmail lo dorikindi ✉️
+              </div>
+            </div>
+            <button id="toastClose" class="toast-close" aria-label="Close">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M6 6l12 12M18 6l-12 12"
+                  fill="none"
+                  stroke="rgba(245,247,250,0.7)"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <div class="header-actions hidden">
+            <div class="status" id="status">Waiting for calls…</div>
+            <button id="stopRecording" disabled>Stop Recording</button>
+          </div>
+        </main>
+      </div>
     </div>
 
+    <script>
+      window.__PROFILE_API_BASE__ = "";
+    </script>
+    <script src="/shared/profile.js"></script>
     <script src="/static/ui.js"></script>
   </body>
 </html>

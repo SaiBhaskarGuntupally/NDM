@@ -27,52 +27,141 @@ body {
   min-height: 100vh;
   font-family: "Segoe UI", "Trebuchet MS", Arial, sans-serif;
   color: var(--text);
-  background: radial-gradient(
-    circle at 20% 20%,
-    #1a2540 0%,
-    var(--bg-start) 40%,
-    var(--bg-end) 100%
-  );
+  background: #070b14;
+}
+
+.ndm-root {
   position: relative;
+  min-height: 100vh;
   overflow: hidden;
+  color: var(--text);
+  background:
+    radial-gradient(
+      1200px 800px at 20% 18%,
+      rgba(70, 110, 255, 0.18),
+      transparent 55%
+    ),
+    radial-gradient(
+      1000px 700px at 78% 22%,
+      rgba(255, 200, 61, 0.1),
+      transparent 58%
+    ),
+    radial-gradient(
+      900px 700px at 60% 80%,
+      rgba(58, 255, 195, 0.08),
+      transparent 60%
+    ),
+    radial-gradient(circle at 50% 50%, #0b1220 0%, #070b14 55%, #05070d 100%);
 }
 
-body::before {
+/* Make sure all actual UI sits above the sparkle layers */
+.ndm-root > * {
+  position: relative;
+  z-index: 2;
+}
+
+.ndm-root::before {
   content: "";
   position: fixed;
-  inset: 0;
+  inset: -20px;
   pointer-events: none;
-  opacity: 0.28;
+  z-index: 0;
+  opacity: 0.55;
   background-image:
-    radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
-    radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    radial-gradient(rgba(255, 255, 255, 0.35) 0.8px, transparent 0.9px),
+    radial-gradient(rgba(255, 255, 255, 0.22) 0.7px, transparent 0.8px),
+    radial-gradient(rgba(255, 255, 255, 0.18) 0.6px, transparent 0.7px),
+    radial-gradient(rgba(255, 255, 255, 0.1) 0.5px, transparent 0.6px);
   background-size:
-    3px 3px,
-    4px 4px;
+    110px 110px,
+    170px 170px,
+    260px 260px,
+    420px 420px;
   background-position:
     0 0,
-    1px 1px;
+    40px 90px,
+    120px 40px,
+    200px 180px;
+  filter: blur(0.15px);
+  animation: ndm-drift 34s linear infinite;
 }
 
-body::after {
+.ndm-root::after {
   content: "";
   position: fixed;
-  inset: 0;
+  inset: -40px;
   pointer-events: none;
-  opacity: 0.22;
+  z-index: 0;
+  opacity: 0.42;
   background-image:
-    radial-gradient(rgba(255, 200, 61, 0.22) 1px, transparent 1px),
-    radial-gradient(rgba(255, 200, 61, 0.14) 1px, transparent 1px),
-    radial-gradient(rgba(255, 255, 255, 0.06) 1.2px, transparent 1.2px);
+    radial-gradient(rgba(255, 200, 61, 0.65) 0.9px, transparent 1px),
+    radial-gradient(rgba(255, 200, 61, 0.35) 1.2px, transparent 1.3px),
+    radial-gradient(rgba(255, 200, 61, 0.22) 1.7px, transparent 1.8px),
+    radial-gradient(rgba(255, 240, 210, 0.14) 1.1px, transparent 1.2px),
+    radial-gradient(rgba(255, 200, 61, 0.08) 2.4px, transparent 2.5px);
   background-size:
-    120px 120px,
+    140px 140px,
     240px 240px,
-    360px 360px;
+    360px 360px,
+    520px 520px,
+    760px 760px;
   background-position:
-    0 0,
-    60px 90px,
-    140px 180px;
-  animation: sparkle-drift 24s linear infinite;
+    10px 20px,
+    90px 140px,
+    260px 210px,
+    180px 60px,
+    40px 300px;
+  mix-blend-mode: screen;
+  filter: blur(0.35px);
+  animation:
+    ndm-drift 28s linear infinite,
+    ndm-twinkle 6.5s ease-in-out infinite;
+}
+
+.ndm-sparkle-layer {
+  position: fixed;
+  inset: -40px;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.22;
+  mix-blend-mode: screen;
+  background-image:
+    radial-gradient(rgba(255, 220, 120, 0.9) 1px, transparent 1.1px),
+    radial-gradient(rgba(255, 220, 120, 0.55) 1.3px, transparent 1.4px),
+    radial-gradient(rgba(255, 255, 255, 0.35) 0.9px, transparent 1px);
+  background-size:
+    520px 520px,
+    680px 680px,
+    860px 860px;
+  background-position:
+    40px 120px,
+    280px 40px,
+    140px 340px;
+  filter: blur(0.15px);
+  animation:
+    ndm-flicker 3.8s ease-in-out infinite,
+    ndm-drift2 22s linear infinite;
+}
+
+.ndm-vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.9;
+  background:
+    radial-gradient(
+      circle at 50% 50%,
+      transparent 55%,
+      rgba(0, 0, 0, 0.45) 100%
+    ),
+    repeating-radial-gradient(
+      circle at 20% 30%,
+      rgba(255, 255, 255, 0.03) 0 1px,
+      transparent 1px 3px
+    );
+  mix-blend-mode: multiply;
+  filter: blur(0.2px);
 }
 
 .ndm-shell {
@@ -82,6 +171,8 @@ body::after {
   align-items: flex-start;
   padding: 16px 0 32px 0;
   min-height: 100vh;
+  position: relative;
+  z-index: 2;
 }
 
 .app-panel {
@@ -97,6 +188,7 @@ body::after {
   max-height: calc(100vh - 24px);
   display: flex;
   flex-direction: column;
+  z-index: 2;
 }
 
 .app-panel::before {
@@ -106,6 +198,7 @@ body::after {
   border-radius: 22px;
   box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.04);
   pointer-events: none;
+  z-index: 0;
 }
 
 .app-panel::after {
@@ -114,21 +207,29 @@ body::after {
   inset: 0;
   border-radius: 22px;
   pointer-events: none;
-  opacity: 0.2;
+  opacity: 0.35;
+  mix-blend-mode: screen;
   background-image:
-    radial-gradient(rgba(255, 200, 61, 0.22) 1px, transparent 1px),
-    radial-gradient(rgba(255, 200, 61, 0.14) 1px, transparent 1px),
-    radial-gradient(rgba(255, 255, 255, 0.06) 1.2px, transparent 1.2px);
+    radial-gradient(rgba(255, 200, 61, 0.3) 1px, transparent 1.6px),
+    radial-gradient(rgba(255, 200, 61, 0.18) 1.2px, transparent 2px),
+    radial-gradient(rgba(255, 255, 255, 0.12) 1.2px, transparent 2.2px);
   background-size:
-    140px 140px,
+    150px 150px,
     260px 260px,
     420px 420px;
   background-position:
     10px 10px,
     80px 120px,
     200px 260px;
-  animation: sparkle-drift 28s linear infinite;
+  animation:
+    sparkle-drift 28s linear infinite,
+    sparkle-twinkle 6.5s ease-in-out infinite;
   z-index: 0;
+}
+
+.app-panel > * {
+  position: relative;
+  z-index: 1;
 }
 
 .app-header {
@@ -176,6 +277,7 @@ body::after {
   font-weight: 700;
   font-size: 16px;
   letter-spacing: 0.5px;
+  text-shadow: 0 0 10px rgba(255, 200, 61, 0.35);
 }
 
 .ndm-subtitle {
@@ -282,6 +384,7 @@ body::after {
   );
   opacity: 0.55;
   pointer-events: none;
+  z-index: 0;
 }
 
 .card::after {
@@ -289,13 +392,21 @@ body::after {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background-image: radial-gradient(
-    rgba(255, 255, 255, 0.05) 1px,
-    transparent 1px
-  );
-  background-size: 3px 3px;
-  opacity: 0.25;
+  background-image:
+    radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1.8px),
+    radial-gradient(rgba(255, 200, 61, 0.12) 1px, transparent 2px);
+  background-size:
+    4px 4px,
+    120px 120px;
+  opacity: 0.22;
   pointer-events: none;
+  mix-blend-mode: screen;
+  z-index: 0;
+}
+
+.card > * {
+  position: relative;
+  z-index: 1;
 }
 
 .caller-card {
@@ -377,6 +488,12 @@ body::after {
   font-size: 13px;
 }
 
+.caller-meta {
+  color: var(--text-muted);
+  margin-top: 6px;
+  font-size: 12px;
+}
+
 .col-left .caller-subtitle {
   font-size: 12px;
 }
@@ -418,6 +535,7 @@ body::after {
   font-size: 18px;
   font-weight: 600;
   margin-bottom: 10px;
+  text-shadow: 0 0 10px rgba(255, 200, 61, 0.18);
 }
 
 .col-left .section-title {
@@ -489,7 +607,9 @@ body::after {
   border: 1px solid rgba(255, 200, 61, 0.4);
   padding: 8px 14px;
   border-radius: 999px;
-  box-shadow: var(--shadow-gold);
+  box-shadow:
+    var(--shadow-gold),
+    inset 0 0 12px rgba(255, 200, 61, 0.12);
   cursor: pointer;
 }
 
@@ -719,6 +839,65 @@ body::after {
   }
   100% {
     transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes ndm-drift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(-18px, 12px, 0) scale(1.01);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes ndm-drift2 {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(14px, -10px, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes ndm-twinkle {
+  0%,
+  100% {
+    opacity: 0.36;
+  }
+  50% {
+    opacity: 0.52;
+  }
+}
+
+@keyframes ndm-flicker {
+  0%,
+  100% {
+    opacity: 0.1;
+  }
+  35% {
+    opacity: 0.26;
+  }
+  55% {
+    opacity: 0.14;
+  }
+  75% {
+    opacity: 0.3;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ndm-root::before,
+  .ndm-root::after,
+  .ndm-sparkle-layer,
+  .ndm-vignette {
+    animation: none !important;
   }
 }
 

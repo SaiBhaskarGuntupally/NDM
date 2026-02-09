@@ -14,7 +14,8 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from gmail_lookup_service import app_paths, db
-from gmail_lookup_service.gmail_client import search_messages
+from shared import profile_store
+from gmail_lookup_service.gmail_client import search_messages, get_mailbox_context
 from gmail_lookup_service.recording import RecordingManager
 
 logging.basicConfig(
@@ -32,6 +33,7 @@ app = FastAPI(title="Gmail Lookup Service")
 RESOURCE_DIR = app_paths.get_resource_dir()
 TEMPLATES_DIR = RESOURCE_DIR / "templates"
 STATIC_DIR = RESOURCE_DIR / "static"
+SHARED_STATIC_DIR = RESOURCE_DIR.parent / "shared" / "static"
 RECORDINGS_DIR = app_paths.get_recordings_dir()
 
 LATEST_RESULTS: List[dict] = []
@@ -90,7 +92,7 @@ async def incoming_call(payload: IncomingCall, request: Request):
     if RECORDING_MANAGER.active and payload.digits == ACTIVE_PHONE_DIGITS and ACTIVE_CALL_ID:
         recent_calls = _sanitize_calls(db.list_recent_calls(limit=20))
         opportunity = db.get_opportunity(payload.digits)
-        emails_cached = db.list_email_links(payload.digits)
+        emails_cached = _apply_mailbox_context(db.list_email_links(payload.digits))
         emit_event(
             "incoming_call_workspace",
             {
@@ -109,7 +111,7 @@ async def incoming_call(payload: IncomingCall, request: Request):
     call_id = db.create_call(payload.digits, status="incoming")
     recent_calls = _sanitize_calls(db.list_recent_calls(limit=20))
     opportunity = db.get_opportunity(payload.digits)
-    emails_cached = db.list_email_links(payload.digits)
+    emails_cached = _apply_mailbox_context(db.list_email_links(payload.digits))
 
     t1 = time.perf_counter()
     emit_event(
@@ -168,7 +170,7 @@ async def incoming_call(payload: IncomingCall, request: Request):
         LATEST_NUMBER = payload.digits
         emit_event(
             "gmail_results_ready",
-            {"phone_digits": payload.digits, "emails": results},
+            {"phone_digits": payload.digits, "emails": _apply_mailbox_context(results)},
         )
         t5 = time.perf_counter()
         logger.info(
@@ -225,6 +227,19 @@ def ui():
     return HTMLResponse(content=html)
 
 
+@app.get("/profile-data/{digits}")
+def profile_data(digits: str):
+    profile = profile_store.load_profile(digits)
+    return {"ok": True, "profile": profile}
+
+
+@app.post("/profile-data/{digits}/notes")
+async def profile_note(digits: str, request: Request):
+    payload = await request.json()
+    notes = profile_store.add_note(digits, payload.get("note_text", ""))
+    return {"ok": True, "notes": notes}
+
+
 @app.get("/favicon.ico")
 def favicon():
     favicon_path = STATIC_DIR / "favicon.ico"
@@ -273,6 +288,21 @@ def _sanitize_calls(calls: List[dict]) -> List[dict]:
     for call in calls:
         call["audio_path"] = _audio_path_if_valid(call.get("audio_path"))
     return calls
+
+
+def _apply_mailbox_context(emails: List[dict]) -> List[dict]:
+    if not emails:
+        return emails
+    try:
+        mailbox_email, account_index = get_mailbox_context()
+    except Exception:  # noqa: BLE001
+        return emails
+    for email in emails:
+        if mailbox_email and not email.get("mailbox_email"):
+            email["mailbox_email"] = mailbox_email
+        if account_index and not email.get("account_index"):
+            email["account_index"] = account_index
+    return emails
 
 
 def _recording_active_for_call(call_id: Optional[int]) -> bool:
@@ -335,7 +365,7 @@ def stop_recording(payload: dict):
 def workspace(phone_digits: str):
     recent_calls = _sanitize_calls(db.list_recent_calls(limit=20))
     opportunity = db.get_opportunity(phone_digits)
-    emails = db.list_email_links(phone_digits)
+    emails = _apply_mailbox_context(db.list_email_links(phone_digits))
     latest_call = db.get_latest_call(phone_digits)
     notes = db.get_notes(latest_call["id"]) if latest_call else []
     current_call_id = latest_call["id"] if latest_call else None
@@ -359,3 +389,5 @@ def opportunity_upsert(payload: dict):
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 app.mount("/recordings", StaticFiles(directory=RECORDINGS_DIR), name="recordings")
+if SHARED_STATIC_DIR.exists():
+    app.mount("/shared", StaticFiles(directory=SHARED_STATIC_DIR), name="shared-static")

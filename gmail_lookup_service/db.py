@@ -77,6 +77,9 @@ def init_db() -> None:
                 opportunity_id INTEGER,
                 phone_digits TEXT,
                 gmail_message_id TEXT,
+                rfc_message_id TEXT,
+                mailbox_email TEXT,
+                account_index TEXT,
                 subject TEXT,
                 from_addr TEXT,
                 date TEXT,
@@ -92,6 +95,17 @@ def init_db() -> None:
         columns = [row[1] for row in conn.execute("PRAGMA table_info(calls)")]
         if "last10" not in columns:
             conn.execute("ALTER TABLE calls ADD COLUMN last10 TEXT")
+            conn.commit()
+
+        email_columns = [row[1] for row in conn.execute("PRAGMA table_info(email_links)")]
+        if "rfc_message_id" not in email_columns:
+            conn.execute("ALTER TABLE email_links ADD COLUMN rfc_message_id TEXT")
+            conn.commit()
+        if "mailbox_email" not in email_columns:
+            conn.execute("ALTER TABLE email_links ADD COLUMN mailbox_email TEXT")
+            conn.commit()
+        if "account_index" not in email_columns:
+            conn.execute("ALTER TABLE email_links ADD COLUMN account_index TEXT")
             conn.commit()
 
 
@@ -315,13 +329,17 @@ def save_email_links(
             conn.execute(
                 """
                 INSERT INTO email_links
-                (opportunity_id, phone_digits, gmail_message_id, subject, from_addr, date, snippet, gmail_link, is_pinned_jd)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (opportunity_id, phone_digits, gmail_message_id, rfc_message_id, mailbox_email, account_index,
+                 subject, from_addr, date, snippet, gmail_link, is_pinned_jd)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     opportunity_id,
                     phone_digits,
-                    None,
+                    e.get("gmail_message_id") or e.get("gmailMessageId"),
+                    e.get("rfc_message_id") or e.get("rfcMessageId"),
+                    e.get("mailbox_email") or e.get("mailboxEmail"),
+                    e.get("account_index") or e.get("accountIndex"),
                     e.get("subject"),
                     e.get("from"),
                     e.get("date"),
