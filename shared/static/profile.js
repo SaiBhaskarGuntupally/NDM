@@ -136,6 +136,9 @@
     var resumeMatchEl = document.getElementById("resumeMatch");
     var notesEl = document.getElementById("notes");
     var callerMetaEl = document.getElementById("callerMeta");
+    var callerNameEl = document.getElementById("callerName");
+    var callerCompanyEl = document.getElementById("callerCompany");
+    var callerTitleEl = document.getElementById("callerTitle");
 
     if (!profile) {
       if (jdTitleEl) jdTitleEl.textContent = "—";
@@ -143,14 +146,17 @@
       if (resumeMatchEl) resumeMatchEl.textContent = "No resume match yet.";
       if (notesEl) notesEl.textContent = "";
       if (callerMetaEl) callerMetaEl.textContent = "—";
+      if (callerNameEl) callerNameEl.textContent = "—";
+      if (callerCompanyEl) callerCompanyEl.textContent = "—";
+      if (callerTitleEl) callerTitleEl.textContent = "—";
       return;
     }
 
     var title = profile.jd_title || deriveJdTitle(profile.jd_text || "");
     if (jdTitleEl) jdTitleEl.textContent = title || "—";
-    if (jdTextEl) jdTextEl.textContent = profile.jd_text || "No JD pinned.";
+    if (jdTextEl) jdTextEl.innerHTML = profile.jd_text || "No JD pinned.";
     if (resumeMatchEl) {
-      resumeMatchEl.textContent = profile.resume_text || "No resume match yet.";
+      resumeMatchEl.innerHTML = profile.resume_text || "No resume match yet.";
     }
 
     if (notesEl) {
@@ -162,7 +168,7 @@
           var ts = document.createElement("div");
           ts.textContent = note.ts || "";
           var text = document.createElement("div");
-          text.textContent = note.note_text || "";
+          text.innerHTML = note.note_text || "";
           item.appendChild(ts);
           item.appendChild(text);
           notesEl.appendChild(item);
@@ -175,16 +181,25 @@
       }
     }
 
+    var displayName =
+      profile.name || profile.vendor_name || profile.vendor || "";
+    var displayCompany = profile.company || profile.vendor_company || "";
+    var displayTitle = profile.title || profile.vendor_title || "";
+
     if (callerMetaEl) {
       var parts = [];
-      if (profile.name) parts.push(profile.name);
-      if (profile.company) parts.push(profile.company);
-      if (profile.vendor && profile.vendor !== profile.name) {
+      if (displayName) parts.push(displayName);
+      if (displayCompany) parts.push(displayCompany);
+      if (profile.vendor && profile.vendor !== displayName) {
         parts.push("Vendor: " + profile.vendor);
       }
-      if (profile.title) parts.push(profile.title);
+      if (displayTitle) parts.push(displayTitle);
       callerMetaEl.textContent = parts.length ? parts.join(" · ") : "—";
     }
+
+    if (callerNameEl) callerNameEl.textContent = displayName || "—";
+    if (callerCompanyEl) callerCompanyEl.textContent = displayCompany || "—";
+    if (callerTitleEl) callerTitleEl.textContent = displayTitle || "—";
   }
 
   global.ProfileStore = {

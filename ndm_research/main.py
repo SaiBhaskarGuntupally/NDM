@@ -196,6 +196,47 @@ def build_workspace_data(
     offset = max(0, offset)
 
     profile = db.get_profile(conn, normalized) if normalized else None
+    shared_profile = profile_store.load_profile(normalized) if normalized else None
+    if normalized and shared_profile:
+        shared_vendor_name = (
+            shared_profile.get("name")
+            or shared_profile.get("vendor")
+            or ""
+        )
+        shared_vendor_company = shared_profile.get("company") or ""
+        shared_vendor_title = shared_profile.get("title") or ""
+
+        if not profile:
+            profile = {
+                "phone_digits": normalized,
+                "last4": normalized[-4:] if len(normalized) >= 4 else "",
+            }
+
+        profile_missing_vendor = any(
+            not profile.get(field)
+            for field in ("vendor_name", "vendor_company", "vendor_title")
+        )
+        shared_has_vendor = any(
+            value
+            for value in (shared_vendor_name, shared_vendor_company, shared_vendor_title)
+        )
+
+        if not profile.get("vendor_name") and shared_vendor_name:
+            profile["vendor_name"] = shared_vendor_name
+        if not profile.get("vendor_company") and shared_vendor_company:
+            profile["vendor_company"] = shared_vendor_company
+        if not profile.get("vendor_title") and shared_vendor_title:
+            profile["vendor_title"] = shared_vendor_title
+
+        if profile_missing_vendor and shared_has_vendor:
+            db.upsert_profile(
+                conn,
+                normalized,
+                normalized[-4:] if len(normalized) >= 4 else "",
+                profile.get("vendor_name") or None,
+                profile.get("vendor_company") or None,
+                profile.get("vendor_title") or None,
+            )
     calls = db.list_calls(conn, normalized, limit + 1, offset) if normalized else []
     has_more_calls = len(calls) > limit
     calls = calls[:limit]

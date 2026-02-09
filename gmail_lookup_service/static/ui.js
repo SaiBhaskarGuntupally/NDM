@@ -128,6 +128,12 @@ function renderCaller(info) {
     <div class="caller-dash">—</div>
     <div class="caller-number">${number}</div>
     <div class="caller-subtitle">Machaa, number dorikindi.</div>
+    <div class="caller-details">
+      <div class="caller-detail-line" id="callerName">—</div>
+      <div class="caller-detail-line" id="callerCompany">—</div>
+      <div class="caller-detail-line" id="callerTitle">—</div>
+    </div>
+    <div class="caller-meta" id="callerMeta">—</div>
   `;
 }
 

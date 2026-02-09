@@ -39,7 +39,36 @@ let allNumbersLoaded = false;
 let jdQuill = null;
 let noteQuill = null;
 let resumeQuill = null;
+let vendorDirty = false;
 const noteEditors = new Map();
+
+async function persistVendorProfile() {
+  if (!activeDigits) return;
+  if (!vendorDirty) return;
+  const payload = {
+    phone_digits: activeDigits,
+    name: vendorNameInput?.value || "",
+    company: vendorCompanyInput?.value || "",
+    title: vendorTitleInput?.value || "",
+  };
+  await fetchJson(`/research/profile/${encodeURIComponent(activeDigits)}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      vendor_name: payload.name,
+      vendor_company: payload.company,
+      vendor_title: payload.title,
+    }),
+  });
+  if (window.ProfileStore?.saveProfile) {
+    await window.ProfileStore.saveProfile(payload, {
+      baseUrl: window.__PROFILE_API_BASE__ || "/research",
+    });
+  }
+  vendorDirty = false;
+}
+
+const saveVendorProfile = debounceSave(persistVendorProfile, 600);
 
 function formatPhone(digits) {
   if (!digits) return "--";
@@ -430,6 +459,37 @@ function updateEmptyState(payload) {
   }
 }
 
+function applyVendorProfile(profile) {
+  if (!profile) return false;
+  const name = profile.name || profile.vendor_name || profile.vendor || "";
+  const company = profile.company || profile.vendor_company || "";
+  const title = profile.title || profile.vendor_title || "";
+  let changed = false;
+
+  if (vendorNameInput && name && vendorNameInput.value !== name) {
+    vendorNameInput.value = name;
+    changed = true;
+  }
+  if (vendorCompanyInput && company && vendorCompanyInput.value !== company) {
+    vendorCompanyInput.value = company;
+    changed = true;
+  }
+  if (vendorTitleInput && title && vendorTitleInput.value !== title) {
+    vendorTitleInput.value = title;
+    changed = true;
+  }
+
+  if (vendorName) {
+    const displayName =
+      (vendorNameInput && vendorNameInput.value) || name || "Research Profile";
+    vendorName.textContent = displayName;
+  }
+
+  vendorDirty = false;
+
+  return changed;
+}
+
 function renderWorkspace(payload) {
   if (!payload) return;
   activeDigits = payload.phone_digits;
@@ -437,18 +497,19 @@ function renderWorkspace(payload) {
   if (input) input.value = payload.formatted || formatPhone(activeDigits);
   if (vendorPhone)
     vendorPhone.textContent = payload.formatted || formatPhone(activeDigits);
-  if (vendorName) {
-    vendorName.textContent =
-      payload.profile?.vendor_name ||
-      payload.display_name ||
-      "Research Profile";
+  applyVendorProfile({
+    vendor_name: payload.profile?.vendor_name,
+    vendor_company: payload.profile?.vendor_company,
+    vendor_title: payload.profile?.vendor_title,
+    vendor: payload.profile?.vendor_name,
+    name: payload.profile?.vendor_name,
+    company: payload.profile?.vendor_company,
+    title: payload.profile?.vendor_title,
+    display_name: payload.display_name,
+  });
+  if (vendorName && !(vendorNameInput && vendorNameInput.value)) {
+    vendorName.textContent = payload.display_name || "Research Profile";
   }
-  if (vendorNameInput)
-    vendorNameInput.value = payload.profile?.vendor_name || "";
-  if (vendorCompanyInput)
-    vendorCompanyInput.value = payload.profile?.vendor_company || "";
-  if (vendorTitleInput)
-    vendorTitleInput.value = payload.profile?.vendor_title || "";
   if (jdQuill) {
     setQuillHtml(jdQuill, payload.jd_text || "");
   }
@@ -464,12 +525,25 @@ function renderWorkspace(payload) {
   updateEmptyState(payload);
 }
 
+async function syncVendorFromProfileStore() {
+  if (!activeDigits || !window.ProfileStore?.loadProfile) return;
+  const profile = await window.ProfileStore.loadProfile(activeDigits, {
+    baseUrl: window.__PROFILE_API_BASE__ || "/research",
+  });
+  if (!profile) return;
+  const changed = applyVendorProfile(profile);
+  if (changed) {
+    await persistVendorProfile();
+  }
+}
+
 async function refreshWorkspace() {
   if (!activeDigits) return;
   const data = await fetchJson(
     `/research/workspace/${encodeURIComponent(activeDigits)}/data`,
   );
   renderWorkspace(data.workspace);
+  await syncVendorFromProfileStore();
 }
 
 async function runSearch() {
@@ -541,31 +615,21 @@ backBtn?.addEventListener("click", () => {
   window.location.href = "/research";
 });
 
-saveProfileBtn?.addEventListener("click", async () => {
-  if (!activeDigits) return;
-  const payload = {
-    phone_digits: activeDigits,
-    name: vendorNameInput?.value || "",
-    company: vendorCompanyInput?.value || "",
-    title: vendorTitleInput?.value || "",
-  };
-  if (window.ProfileStore?.saveProfile) {
-    await window.ProfileStore.saveProfile(payload, {
-      baseUrl: window.__PROFILE_API_BASE__ || "/research",
-    });
-  } else {
-    await fetchJson(`/research/profile/${encodeURIComponent(activeDigits)}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        vendor_name: vendorNameInput?.value || "",
-        vendor_company: vendorCompanyInput?.value || "",
-        vendor_title: vendorTitleInput?.value || "",
-      }),
-    });
-  }
-  await refreshWorkspace();
+vendorNameInput?.addEventListener("input", () => {
+  vendorDirty = true;
+  saveVendorProfile();
 });
+vendorCompanyInput?.addEventListener("input", () => {
+  vendorDirty = true;
+  saveVendorProfile();
+});
+vendorTitleInput?.addEventListener("input", () => {
+  vendorDirty = true;
+  saveVendorProfile();
+});
+vendorNameInput?.addEventListener("blur", persistVendorProfile);
+vendorCompanyInput?.addEventListener("blur", persistVendorProfile);
+vendorTitleInput?.addEventListener("blur", persistVendorProfile);
 
 addNoteBtn?.addEventListener("click", async () => {
   const text = noteQuill ? noteQuill.getText().trim() : "";
@@ -651,6 +715,7 @@ if (resumeQuill) {
 
 if (workspacePayload) {
   renderWorkspace(workspacePayload);
+  syncVendorFromProfileStore();
 } else if (stateIdle) {
   setState("idle");
 }
