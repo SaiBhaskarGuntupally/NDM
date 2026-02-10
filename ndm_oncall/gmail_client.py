@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 
-from gmail_lookup_service.app_paths import get_credentials_path, get_token_path
+from ndm_oncall.app_paths import get_credentials_path, get_token_path
 from typing import Dict, List, Optional
 
 from google.auth.transport.requests import Request

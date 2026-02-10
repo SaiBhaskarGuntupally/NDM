@@ -5,12 +5,12 @@ import traceback
 
 import uvicorn
 
-from gmail_lookup_service import app_paths
+from ndm_oncall import app_paths
 
 
 def main() -> None:
     try:
-        from gmail_lookup_service.main import app
+        from ndm_oncall.main import app
 
         uvicorn.run(
             app,

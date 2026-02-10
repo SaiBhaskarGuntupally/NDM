@@ -194,7 +194,14 @@
     <script>
       window.__PROFILE_API_BASE__ = "";
     </script>
-    <script src="/shared/profile.js"></script>
+    <!-- INJECT_PROFILE_JS -->
+    <script>
+      console.log(
+        "[NDM] ProfileStore loaded:",
+        typeof window.ProfileStore !== "undefined",
+        window.ProfileStore,
+      );
+    </script>
     <script src="/static/ui.js"></script>
   </body>
 </html>

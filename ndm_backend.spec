@@ -1,15 +1,15 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_submodules
 
-hiddenimports = ['gmail_lookup_service']
-hiddenimports += collect_submodules('gmail_lookup_service')
+hiddenimports = ['ndm_oncall']
+hiddenimports += collect_submodules('ndm_oncall')
 
 
 a = Analysis(
-    ['C:\\Users\\vidhy\\OneDrive\\Desktop\\Exp_2\\gmail_lookup_service\\ndm_backend.py'],
+    ['C:\\Users\\vidhy\\OneDrive\\Desktop\\Exp_2\\ndm_oncall\\ndm_backend.py'],
     pathex=['C:\\Users\\vidhy\\OneDrive\\Desktop\\Exp_2'],
     binaries=[],
-    datas=[('C:\\Users\\vidhy\\OneDrive\\Desktop\\Exp_2\\gmail_lookup_service\\templates', 'templates'), ('C:\\Users\\vidhy\\OneDrive\\Desktop\\Exp_2\\gmail_lookup_service\\static', 'static')],
+    datas=[('C:\\Users\\vidhy\\OneDrive\\Desktop\\Exp_2\\ndm_oncall\\templates', 'templates'), ('C:\\Users\\vidhy\\OneDrive\\Desktop\\Exp_2\\ndm_oncall\\static', 'static')],
     hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},

@@ -4,7 +4,7 @@ import sqlite3
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from gmail_lookup_service.app_paths import get_db_path
+from ndm_oncall.app_paths import get_db_path
 
 DB_PATH = str(get_db_path())
 

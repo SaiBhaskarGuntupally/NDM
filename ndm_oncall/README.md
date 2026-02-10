@@ -30,7 +30,7 @@ Exp_2/
   - manifest.json
   - background.js
   - content.js
-- gmail_lookup_service/
+- ndm_oncall/
   - README.md
   - main.py
   - db.py
@@ -85,7 +85,7 @@ Validation and normalization
 
 ## Backend (FastAPI) details
 
-Location: gmail_lookup_service/
+Location: ndm_oncall/
 
 Core endpoints
 
@@ -125,7 +125,7 @@ Time handling
 
 OAuth files
 
-- Place credentials.json in %APPDATA%\NDM\ (preferred) or gmail_lookup_service/
+- Place credentials.json in %APPDATA%\NDM\ (preferred) or ndm_oncall/
 - token.json is created after the first OAuth login in %APPDATA%\NDM\
 
 ## Recording status
@@ -144,11 +144,11 @@ Install dependencies
 
 - python -m venv .venv
 - .venv\Scripts\activate
-- pip install -r gmail_lookup_service\requirements.txt
+- pip install -r ndm_oncall\requirements.txt
 
 Run the backend
 
-- python -m uvicorn gmail_lookup_service.main:app --host 127.0.0.1 --port 8787
+- python -m uvicorn ndm_oncall.main:app --host 127.0.0.1 --port 8787
 
 Open the UI
 
@@ -169,7 +169,7 @@ Dev mode (fast iteration)
 
 1. Start the backend (keep port 8787):
 
-- python -m uvicorn gmail_lookup_service.main:app --host 127.0.0.1 --port 8787
+- python -m uvicorn ndm_oncall.main:app --host 127.0.0.1 --port 8787
 
 2. Run the desktop shell (from repo root):
 
@@ -243,7 +243,7 @@ Call the reset endpoint:
 - Desktop shows "Backend failed to start":
   - Check %APPDATA%\NDM\ndm_backend.log
   - Check %APPDATA%\NDM\ndm_desktop.log
-- If Gmail auth is missing, place credentials.json in %APPDATA%\NDM\ (preferred) or gmail_lookup_service/
+- If Gmail auth is missing, place credentials.json in %APPDATA%\NDM\ (preferred) or ndm_oncall/
 - token.json is created after the first OAuth login
 - If call detection seems late, confirm the content script is injected in the correct frame
 - UI always filters history per current digits; it never shows all calls
@@ -254,9 +254,9 @@ Call the reset endpoint:
 - chrome_extension/content.js
 - chrome_extension/background.js
 - chrome_extension/manifest.json
-- gmail_lookup_service/main.py
-- gmail_lookup_service/db.py
-- gmail_lookup_service/static/ui.js
-- gmail_lookup_service/static/ui.css
-- gmail_lookup_service/templates/ui.html
+- ndm_oncall/main.py
+- ndm_oncall/db.py
+- ndm_oncall/static/ui.js
+- ndm_oncall/static/ui.css
+- ndm_oncall/templates/ui.html
 - ndm_desktop/src-tauri/src/main.rs

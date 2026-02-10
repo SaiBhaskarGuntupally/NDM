@@ -533,6 +533,7 @@ async function syncVendorFromProfileStore() {
   if (!profile) return;
   const changed = applyVendorProfile(profile);
   if (changed) {
+    vendorDirty = true;
     await persistVendorProfile();
   }
 }

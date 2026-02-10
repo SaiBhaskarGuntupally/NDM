@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>War Room - Resume</title>
+    <link rel="stylesheet" href="/static/war_room.css" />
+  </head>
+  <body>
+    <div class="war-room-shell">
+      <header class="war-room-top">
+        <div class="war-room-title">War Room</div>
+        <div class="war-room-subtitle">Landscape tactical screen</div>
+      </header>
+
+      <section class="war-room-grid">
+        <div class="war-room-column">
+          <div class="war-room-card">
+            <div class="war-room-card-title">Vendor JD</div>
+            <div class="war-room-scroll war-room-highlight">
+              <p><strong>Role Snapshot:</strong> Senior Frontend Engineer</p>
+              <p>
+                Build rapid, reliable interfaces. Emphasize ownership of core
+                UI, collaboration with product, and measurable impact.
+              </p>
+              <p>
+                Highlight: performance tuning, accessibility, micro frontends,
+                and complex dashboards.
+              </p>
+              <p>
+                Requirements: React, TypeScript, frontend systems design,
+                deployment pipelines.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="war-room-column">
+          <div class="war-room-card">
+            <div class="war-room-card-title">Matching Resume Bullets</div>
+            <div class="war-room-scroll">
+              <p>
+                - Led redesign of analytics console; improved task completion by
+                32 percent.
+              </p>
+              <p>
+                - Implemented design system tokens across 14 teams; reduced UI
+                regression bugs by 41 percent.
+              </p>
+              <p>
+                - Built real-time collaboration panel with WebSockets and
+                virtualized lists.
+              </p>
+              <p>- Partnered with PM and Design to ship weekly experiments.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="war-room-column">
+          <div class="war-room-card war-room-notes">
+            <div class="war-room-card-title">Notes and Actions</div>
+            <textarea
+              placeholder="Actionable notes, objections, next steps..."
+            ></textarea>
+            <div class="war-room-actions">
+              <button type="button">Log Key Objection</button>
+              <button type="button">Add Follow Up</button>
+              <button type="button">Mark As Strong Match</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script src="/static/war_room_pages.js"></script>
+    <script>
+      window.WarRoomPages?.init({ role: "resume", windowSide: "left" });
+    </script>
+  </body>
+</html>

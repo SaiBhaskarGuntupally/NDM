@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import logging
 import re
 import sqlite3
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from shared.app_paths import get_db_path
+
+logger = logging.getLogger("profile_store")
 
 DB_PATH = str(get_db_path())
 
@@ -93,7 +96,9 @@ def _ensure_schema(conn: sqlite3.Connection) -> None:
 def load_profile(phone_digits: str) -> Optional[Dict[str, Any]]:
     last10 = normalize_last10(phone_digits)
     if not last10:
+        logger.warning("load_profile: invalid phone_digits=%s", phone_digits)
         return None
+    logger.info("load_profile: phone_digits=%s last10=%s", phone_digits, last10)
     with _connect() as conn:
         _ensure_schema(conn)
         profile = conn.execute(
@@ -123,6 +128,13 @@ def load_profile(phone_digits: str) -> Optional[Dict[str, Any]]:
     last4 = last10[-4:] if len(last10) >= 4 else ""
 
     notes = [dict(row) for row in notes_rows]
+    
+    logger.info(
+        "load_profile: result vendor_name=%s jd_text_len=%d resume_text_len=%d",
+        vendor_name,
+        len(jd_text),
+        len(resume_text),
+    )
 
     return {
         "phone_digits": last10,
@@ -143,6 +155,7 @@ def load_profile(phone_digits: str) -> Optional[Dict[str, Any]]:
 def save_profile(payload: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     last10 = normalize_last10(payload.get("phone_digits", ""))
     if not last10:
+        logger.warning("save_profile: invalid phone_digits in payload=%s", payload)
         return None
     last4 = last10[-4:] if len(last10) >= 4 else ""
     vendor_name = payload.get("name") or payload.get("vendor_name") or ""
@@ -150,6 +163,14 @@ def save_profile(payload: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     vendor_title = payload.get("title") or payload.get("vendor_title") or ""
     jd_text = payload.get("jd_text")
     resume_text = payload.get("resume_text")
+    
+    logger.info(
+        "save_profile: last10=%s vendor_name=%s jd_text=%s resume_text=%s",
+        last10,
+        vendor_name,
+        "provided" if jd_text is not None else "None",
+        "provided" if resume_text is not None else "None",
+    )
 
     with _connect() as conn:
         _ensure_schema(conn)
@@ -169,6 +190,7 @@ def save_profile(payload: Dict[str, Any]) -> Optional[Dict[str, Any]]:
             (last10, last4, vendor_name, vendor_company, vendor_title, now, now),
         )
         if jd_text is not None:
+            logger.info("save_profile: saving jd_text len=%d", len(jd_text))
             conn.execute(
                 """
                 INSERT INTO research_jd (phone_digits, jd_text, updated_at)
@@ -180,6 +202,7 @@ def save_profile(payload: Dict[str, Any]) -> Optional[Dict[str, Any]]:
                 (last10, jd_text, now),
             )
         if resume_text is not None:
+            logger.info("save_profile: saving resume_text len=%d", len(resume_text))
             conn.execute(
                 """
                 INSERT INTO research_resume_lines (phone_digits, resume_text, updated_at)
@@ -191,6 +214,7 @@ def save_profile(payload: Dict[str, Any]) -> Optional[Dict[str, Any]]:
                 (last10, resume_text, now),
             )
         conn.commit()
+        logger.info("save_profile: committed for last10=%s", last10)
 
     return load_profile(last10)
 

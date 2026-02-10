@@ -124,17 +124,33 @@ function buildGmailOpenUrl({
 
 function renderCaller(info) {
   const number = formatPhoneDigits(info.phone_digits || "");
+  // Name will be set dynamically later
   callerInfoEl.innerHTML = `
     <div class="caller-dash">—</div>
     <div class="caller-number">${number}</div>
-    <div class="caller-subtitle">Machaa, number dorikindi.</div>
+    <div class="caller-subtitle">—</div>
     <div class="caller-details">
       <div class="caller-detail-line" id="callerName">—</div>
       <div class="caller-detail-line" id="callerCompany">—</div>
       <div class="caller-detail-line" id="callerTitle">—</div>
     </div>
-    <div class="caller-meta" id="callerMeta">—</div>
+    <div class="caller-meta" id="callerMeta"></div>
   `;
+  updateCallerSubtitle(false);
+}
+
+function updateCallerSubtitle(hasEmails) {
+  const subtitle = callerInfoEl.querySelector(".caller-subtitle");
+  if (!subtitle) return;
+  if (hasEmails) {
+    subtitle.textContent = "Machaa, number dorikindi.";
+    subtitle.style.color = "#00FF00";
+    subtitle.style.textShadow = "0 0 8px #00FF00, 0 0 16px #00FF00";
+  } else {
+    subtitle.textContent = "Machaa, em dorakala";
+    subtitle.style.color = "#FF3333";
+    subtitle.style.textShadow = "0 0 8px #FF3333, 0 0 16px #FF3333";
+  }
 }
 
 function setSeenBadge(isSeen) {
@@ -186,18 +202,27 @@ function renderOpportunity(op) {
 }
 
 async function applyProfile(phoneDigits) {
-  if (!window.ProfileStore?.loadProfile) return;
-  const profile = await window.ProfileStore.loadProfile(phoneDigits, {
-    baseUrl: window.__PROFILE_API_BASE__ || "",
-  });
-  if (window.ProfileStore?.renderOnCall) {
-    window.ProfileStore.renderOnCall(profile);
+  if (!window.ProfileStore?.loadProfile) {
+    console.warn("[NDM] ProfileStore.loadProfile not available");
+    return;
+  }
+  try {
+    const profile = await window.ProfileStore.loadProfile(phoneDigits, {
+      baseUrl: window.__PROFILE_API_BASE__ || "",
+    });
+    console.log("[NDM] Loaded profile for", phoneDigits, profile);
+    if (window.ProfileStore?.renderOnCall) {
+      window.ProfileStore.renderOnCall(profile);
+    }
+  } catch (err) {
+    console.error("[NDM] Failed to load profile:", err);
   }
 }
 
 function renderEmails(items) {
   emailsRecentEl.innerHTML = "";
   emailsRelatedEl.innerHTML = "";
+  updateCallerSubtitle(!!(items && items.length));
 
   if (!items || items.length === 0) {
     emailsRecentEl.innerHTML =
@@ -424,3 +449,143 @@ evtSource.addEventListener("gmail_results_ready", (event) => {
   }
   statusEl.textContent = `Gmail results ready: ${data.phone_digits}`;
 });
+
+function initWarRoomUI() {
+  if (!warRoomButton || !window.WarRoomManager) return;
+
+  const helperKey = "ndm_hide_war_room_helper";
+  let popupBlocked = false;
+  let helperShown = false;
+
+  function setHelperVisibility(visible) {
+    if (!warRoomHelperEl) return;
+    warRoomHelperEl.classList.toggle("hidden", !visible);
+  }
+
+  function showHelperIfNeeded() {
+    if (!warRoomHelperEl || helperShown) return;
+    const isHidden = localStorage.getItem(helperKey) === "true";
+    if (isHidden) return;
+    helperShown = true;
+    setHelperVisibility(true);
+  }
+
+  function updateHelperToggle() {
+    if (!warRoomHelperToggle) return;
+    const isHidden = localStorage.getItem(helperKey) === "true";
+    warRoomHelperToggle.checked = isHidden;
+  }
+
+  function setPopupBlockedState(blocked) {
+    popupBlocked = blocked;
+    if (!warRoomPopupBlockedEl) return;
+    warRoomPopupBlockedEl.classList.toggle("hidden", !blocked);
+  }
+
+  function setStatusState(state, missing) {
+    if (!warRoomStatusEl || !warRoomButton) return;
+    warRoomStatusEl.classList.remove(
+      "status-active",
+      "status-inactive",
+      "status-incomplete",
+    );
+    if (state === "active") {
+      warRoomStatusEl.textContent = "WAR ROOM ACTIVE";
+      warRoomStatusEl.classList.add("status-active");
+      warRoomButton.classList.remove("is-flashing");
+    } else if (state === "incomplete") {
+      warRoomStatusEl.textContent = "WAR ROOM INCOMPLETE";
+      warRoomStatusEl.classList.add("status-incomplete");
+      warRoomButton.classList.add("is-flashing");
+    } else {
+      warRoomStatusEl.textContent = "WAR ROOM INACTIVE";
+      warRoomStatusEl.classList.add("status-inactive");
+      warRoomButton.classList.add("is-flashing");
+    }
+
+    if (!warRoomIncompleteEl) return;
+    const showIncomplete = state === "incomplete";
+    warRoomIncompleteEl.classList.toggle("hidden", !showIncomplete);
+    if (!showIncomplete || !warRoomMissingTextEl) return;
+    warRoomMissingTextEl.textContent = missing || "";
+  }
+
+  function updateMissingButtons(status) {
+    if (reopenResumeBtn) {
+      reopenResumeBtn.style.display = status.resumeOpen
+        ? "none"
+        : "inline-flex";
+    }
+    if (reopenCheatsBtn) {
+      reopenCheatsBtn.style.display = status.cheatsOpen
+        ? "none"
+        : "inline-flex";
+    }
+  }
+
+  function buildMissingText(status) {
+    if (!status.resumeOpen && !status.cheatsOpen) {
+      return "Resume and Cheats windows are missing.";
+    }
+    if (!status.resumeOpen) return "Resume window is missing.";
+    if (!status.cheatsOpen) return "Cheats window is missing.";
+    return "";
+  }
+
+  function refreshStatus() {
+    const status = window.WarRoomManager.getWindowStatus();
+    const bothOpen = status.resumeOpen && status.cheatsOpen;
+    const anyOpen = status.resumeOpen || status.cheatsOpen;
+    if (bothOpen) {
+      setStatusState("active");
+      setPopupBlockedState(false);
+      showHelperIfNeeded();
+    } else if (anyOpen) {
+      setStatusState("incomplete", buildMissingText(status));
+    } else {
+      setStatusState("inactive");
+    }
+    updateMissingButtons(status);
+    return status;
+  }
+
+  warRoomButton.addEventListener("click", () => {
+    const result = window.WarRoomManager.openWarRoom();
+    if (result.popupBlocked) {
+      setPopupBlockedState(true);
+    }
+    refreshStatus();
+  });
+
+  reopenResumeBtn?.addEventListener("click", () => {
+    window.WarRoomManager.openResumeWindow();
+    refreshStatus();
+  });
+
+  reopenCheatsBtn?.addEventListener("click", () => {
+    window.WarRoomManager.openCheatWindow();
+    refreshStatus();
+  });
+
+  manualResumeBtn?.addEventListener("click", () => {
+    const ref = window.WarRoomManager.openResumeWindow();
+    if (ref) setPopupBlockedState(false);
+    refreshStatus();
+  });
+
+  manualCheatsBtn?.addEventListener("click", () => {
+    const ref = window.WarRoomManager.openCheatWindow();
+    if (ref) setPopupBlockedState(false);
+    refreshStatus();
+  });
+
+  warRoomHelperToggle?.addEventListener("change", (event) => {
+    const isHidden = event.target.checked;
+    localStorage.setItem(helperKey, isHidden ? "true" : "false");
+    if (isHidden) setHelperVisibility(false);
+  });
+
+  updateHelperToggle();
+  refreshStatus();
+  setInterval(refreshStatus, 1500);
+}

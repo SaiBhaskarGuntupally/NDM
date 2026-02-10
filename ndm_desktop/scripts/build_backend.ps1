@@ -1,7 +1,7 @@
 $ErrorActionPreference = "Stop"
 
 $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-$serviceDir = Join-Path $repoRoot "gmail_lookup_service"
+$serviceDir = Join-Path $repoRoot "ndm_oncall"
 $distDir = Join-Path $repoRoot "ndm_desktop\src-tauri\bin"
 
 $venvPython = Join-Path $repoRoot ".venv\Scripts\python.exe"
@@ -11,8 +11,8 @@ Push-Location $repoRoot
 try {
   & $pythonExe -m PyInstaller --noconfirm --onefile --noconsole --name ndm_backend `
     --paths "$repoRoot" `
-    --hidden-import gmail_lookup_service `
-    --collect-submodules gmail_lookup_service `
+    --hidden-import ndm_oncall `
+    --collect-submodules ndm_oncall `
     --add-data "$serviceDir\templates;templates" `
     --add-data "$serviceDir\static;static" `
     "$serviceDir\ndm_backend.py"

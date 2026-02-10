@@ -5,7 +5,7 @@ NDM Research is a lightweight FastAPI app that reads and writes the same SQLite 
 ## Run
 
 - OnCall (existing):
-  - `uvicorn gmail_lookup_service.main:app --reload --port 8787`
+  - `uvicorn ndm_oncall.main:app --reload --port 8787`
 - Research:
   - `uvicorn ndm_research.main:app --reload --port 8788`
 

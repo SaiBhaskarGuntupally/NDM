@@ -9,7 +9,7 @@ from typing import Optional
 import sounddevice as sd
 import soundfile as sf
 
-logger = logging.getLogger("gmail_lookup")
+logger = logging.getLogger("ndm_oncall")
 
 
 @dataclass

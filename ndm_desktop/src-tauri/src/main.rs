@@ -8,8 +8,8 @@ use std::time::{Duration, Instant};
 use tauri::api::process::{Command, CommandChild, CommandEvent};
 use tauri::{GlobalShortcutManager, Manager, RunEvent};
 
-const HEALTH_URL: &str = "http://127.0.0.1:8787/health";
-const UI_URL: &str = "http://127.0.0.1:8787/ui";
+const HEALTH_URL: &str = "http://127.0.0.1:8789/health";
+const UI_URL: &str = "http://127.0.0.1:8789/ui";
 
 struct BackendState {
     child: Mutex<Option<CommandChild>>,

@@ -11,7 +11,7 @@ datas = [
 ]
 
 a = Analysis(
-    ["gmail_lookup_service/ndm_backend.py"],
+    ["ndm_oncall/ndm_backend.py"],
     pathex=[str(repo_root)],
     binaries=[],
     datas=datas,

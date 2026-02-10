@@ -869,10 +869,11 @@ body {
   display: none;
 }
 
-.icon-note,
-.icon-check {
-  width: 18px;
-  height: 18px;
+.war-room-button {
+  position: relative;
+  border: none;
+  cursor: pointer;
+  padding: 10px 16px;
   display: inline-flex;
   align-items: center;
   justify-content: center;

@@ -53,13 +53,23 @@
 
   async function loadProfile(phoneDigits, opts) {
     var norm = normalizePhone(phoneDigits);
-    if (!norm.last10) return null;
+    if (!norm.last10) {
+      console.warn("[ProfileStore] Invalid phone digits:", phoneDigits);
+      return null;
+    }
     var base = getBaseUrl(opts);
-    var res = await fetch(
-      base + "/profile-data/" + encodeURIComponent(norm.last10),
-    );
-    if (!res.ok) return null;
+    var url = base + "/profile-data/" + encodeURIComponent(norm.last10);
+    console.log("[ProfileStore] Loading profile from:", url);
+    var res = await fetch(url);
+    if (!res.ok) {
+      console.warn(
+        "[ProfileStore] Failed to load profile, status:",
+        res.status,
+      );
+      return null;
+    }
     var data = await res.json();
+    console.log("[ProfileStore] Loaded profile data:", data);
     return data.profile || null;
   }
 
@@ -68,19 +78,31 @@
       profile &&
         (profile.phone_digits || profile.phoneE164 || profile.phone || ""),
     );
-    if (!norm.last10) return null;
+    if (!norm.last10) {
+      console.warn(
+        "[ProfileStore] Cannot save, invalid phone digits:",
+        profile,
+      );
+      return null;
+    }
     var payload = Object.assign({}, profile, { phone_digits: norm.last10 });
     var base = getBaseUrl(opts);
-    var res = await fetch(
-      base + "/profile-data/" + encodeURIComponent(norm.last10),
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      },
-    );
-    if (!res.ok) return null;
+    var url = base + "/profile-data/" + encodeURIComponent(norm.last10);
+    console.log("[ProfileStore] Saving profile to:", url, "payload:", payload);
+    var res = await fetch(url, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      console.warn(
+        "[ProfileStore] Failed to save profile, status:",
+        res.status,
+      );
+      return null;
+    }
     var data = await res.json();
+    console.log("[ProfileStore] Save result:", data);
     return data.profile || null;
   }
 
@@ -131,34 +153,59 @@
   }
 
   function renderOnCall(profile) {
-    var jdTitleEl = document.getElementById("jdTitle");
     var jdTextEl = document.getElementById("jdText");
     var resumeMatchEl = document.getElementById("resumeMatch");
-    var notesEl = document.getElementById("notes");
-    var callerMetaEl = document.getElementById("callerMeta");
     var callerNameEl = document.getElementById("callerName");
     var callerCompanyEl = document.getElementById("callerCompany");
     var callerTitleEl = document.getElementById("callerTitle");
+    var callerMetaEl = document.getElementById("callerMeta");
+    var callerDashEl = document.querySelector("#callerInfo .caller-dash");
+    var notesEl = document.getElementById("notes");
 
+    // If no profile, show defaults
     if (!profile) {
-      if (jdTitleEl) jdTitleEl.textContent = "—";
-      if (jdTextEl) jdTextEl.textContent = "No JD pinned.";
-      if (resumeMatchEl) resumeMatchEl.textContent = "No resume match yet.";
-      if (notesEl) notesEl.textContent = "";
-      if (callerMetaEl) callerMetaEl.textContent = "—";
-      if (callerNameEl) callerNameEl.textContent = "—";
+      if (jdTextEl) {
+        jdTextEl.innerHTML = "No JD pinned.";
+        jdTextEl.style.display = "block";
+        console.log("[OnCall] No profile: JD pinned");
+      }
+      if (resumeMatchEl) {
+        resumeMatchEl.innerHTML = "No resume match yet.";
+        resumeMatchEl.style.display = "block";
+        console.log("[OnCall] No profile: Resume match");
+      }
+      if (callerNameEl) callerNameEl.textContent = "";
       if (callerCompanyEl) callerCompanyEl.textContent = "—";
       if (callerTitleEl) callerTitleEl.textContent = "—";
+      if (callerMetaEl) callerMetaEl.textContent = "";
+      if (callerDashEl) callerDashEl.textContent = "—";
+      if (notesEl) notesEl.innerHTML = "";
       return;
     }
 
-    var title = profile.jd_title || deriveJdTitle(profile.jd_text || "");
-    if (jdTitleEl) jdTitleEl.textContent = title || "—";
-    if (jdTextEl) jdTextEl.innerHTML = profile.jd_text || "No JD pinned.";
+    // JD text (HTML, not editable)
+    if (jdTextEl) {
+      jdTextEl.innerHTML = profile.jd_text || "No JD pinned.";
+      jdTextEl.style.display = "block";
+      console.log("[OnCall] Render JD:", profile.jd_text);
+    }
+    // Resume text (HTML, not editable)
     if (resumeMatchEl) {
       resumeMatchEl.innerHTML = profile.resume_text || "No resume match yet.";
+      resumeMatchEl.style.display = "block";
+      console.log("[OnCall] Render Resume:", profile.resume_text);
     }
-
+    // Contact info (display only)
+    var displayName =
+      profile.name || profile.vendor_name || profile.vendor || "";
+    var displayCompany = profile.company || profile.vendor_company || "";
+    var displayTitle = profile.title || profile.vendor_title || "";
+    if (callerNameEl) callerNameEl.textContent = "";
+    if (callerCompanyEl) callerCompanyEl.textContent = displayCompany || "—";
+    if (callerTitleEl) callerTitleEl.textContent = displayTitle || "—";
+    if (callerMetaEl) callerMetaEl.textContent = "";
+    if (callerDashEl) callerDashEl.textContent = displayName || "—";
+    // Notes (unchanged)
     if (notesEl) {
       notesEl.innerHTML = "";
       if (profile.notes && profile.notes.length) {
@@ -180,28 +227,9 @@
         notesEl.appendChild(empty);
       }
     }
-
-    var displayName =
-      profile.name || profile.vendor_name || profile.vendor || "";
-    var displayCompany = profile.company || profile.vendor_company || "";
-    var displayTitle = profile.title || profile.vendor_title || "";
-
-    if (callerMetaEl) {
-      var parts = [];
-      if (displayName) parts.push(displayName);
-      if (displayCompany) parts.push(displayCompany);
-      if (profile.vendor && profile.vendor !== displayName) {
-        parts.push("Vendor: " + profile.vendor);
-      }
-      if (displayTitle) parts.push(displayTitle);
-      callerMetaEl.textContent = parts.length ? parts.join(" · ") : "—";
-    }
-
-    if (callerNameEl) callerNameEl.textContent = displayName || "—";
-    if (callerCompanyEl) callerCompanyEl.textContent = displayCompany || "—";
-    if (callerTitleEl) callerTitleEl.textContent = displayTitle || "—";
   }
 
+  // Defensive: assign to both global and window
   global.ProfileStore = {
     normalizePhone: normalizePhone,
     loadProfile: loadProfile,
@@ -210,4 +238,7 @@
     renderResearch: renderResearch,
     renderOnCall: renderOnCall,
   };
+  if (typeof window !== "undefined") {
+    window.ProfileStore = global.ProfileStore;
+  }
 })(window);

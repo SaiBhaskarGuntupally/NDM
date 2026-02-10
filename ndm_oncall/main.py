@@ -13,10 +13,10 @@ from fastapi.responses import HTMLResponse, StreamingResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from gmail_lookup_service import app_paths, db
+from ndm_oncall import app_paths, db
 from shared import profile_store
-from gmail_lookup_service.gmail_client import search_messages, get_mailbox_context
-from gmail_lookup_service.recording import RecordingManager
+from ndm_oncall.gmail_client import search_messages, get_mailbox_context
+from ndm_oncall.recording import RecordingManager
 
 logging.basicConfig(
     level=logging.INFO,
@@ -26,9 +26,9 @@ logging.basicConfig(
         logging.StreamHandler(),
     ],
 )
-logger = logging.getLogger("gmail_lookup")
+logger = logging.getLogger("ndm_oncall")
 
-app = FastAPI(title="Gmail Lookup Service")
+app = FastAPI(title="NDM OnCall")
 
 RESOURCE_DIR = app_paths.get_resource_dir()
 TEMPLATES_DIR = RESOURCE_DIR / "templates"
@@ -224,12 +224,26 @@ def reset_db():
 @app.get("/ui", response_class=HTMLResponse)
 def ui():
     html = (TEMPLATES_DIR / "ui.html").read_text(encoding="utf-8")
+    # Inject profile.js inline to avoid browser caching issues
+    profile_js = ""
+    profile_js_path = SHARED_STATIC_DIR / "profile.js"
+    if profile_js_path.exists():
+        profile_js = profile_js_path.read_text(encoding="utf-8")
+    html = html.replace("<!-- INJECT_PROFILE_JS -->", f"<script>\n{profile_js}\n</script>")
     return HTMLResponse(content=html)
 
 
 @app.get("/profile-data/{digits}")
 def profile_data(digits: str):
     profile = profile_store.load_profile(digits)
+    return {"ok": True, "profile": profile}
+
+
+@app.put("/profile-data/{digits}")
+async def profile_data_update(digits: str, request: Request):
+    payload = await request.json()
+    payload["phone_digits"] = digits
+    profile = profile_store.save_profile(payload)
     return {"ok": True, "profile": profile}
 
 
