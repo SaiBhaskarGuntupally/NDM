@@ -22,9 +22,331 @@
               </div>
             </div>
             <div class="status-pill">
-              <span class="status-dot"></span>
-              <span>Listening...</span>
+              <button id="machaaModeBtn" class="machaa-mode-btn" type="button">
+                <span class="machaa-label">⚡ Machaa Mode</span>
+              </button>
+              <div
+                id="machaaModeMsg"
+                class="machaa-mode-msg"
+                style="display: none"
+              >
+                Please allow popups to use Machaa Mode.
+                <button class="machaa-mode-retry" type="button">Retry</button>
+              </div>
             </div>
+            <script>
+              (function () {
+                var mainRef = null;
+                var portRef = null;
+
+                function maximizeOnScreen(winRef, screen) {
+                  try {
+                    winRef.moveTo(screen.availLeft, screen.availTop);
+                    winRef.resizeTo(screen.availWidth, screen.availHeight);
+                  } catch (e) {
+                    console.warn("[NDM] moveTo/resizeTo blocked:", e);
+                  }
+                }
+
+                function openAndPlace(screens) {
+                  var s1 = screens[0];
+                  var s2 = screens.length > 1 ? screens[1] : null;
+                  var mainScreen = s1;
+                  var portScreen = s2 || s1;
+
+                  // Open /ui on display 1
+                  if (mainRef && !mainRef.closed) {
+                    mainRef.focus();
+                    maximizeOnScreen(mainRef, mainScreen);
+                  } else {
+                    var mf =
+                      "popup=yes,left=" +
+                      mainScreen.availLeft +
+                      ",top=" +
+                      mainScreen.availTop +
+                      ",width=" +
+                      mainScreen.availWidth +
+                      ",height=" +
+                      mainScreen.availHeight;
+                    // Open main window and mark as machaa role
+                    mainRef = window.open(
+                      "/ui?machaa=1&role=main",
+                      "NDM_MACHA_MODE_MAIN",
+                      mf,
+                    );
+                    if (mainRef) {
+                      // Immediately try to maximize synchronously
+                      try {
+                        maximizeOnScreen(mainRef, mainScreen);
+                        try {
+                          mainRef.focus();
+                        } catch (e) {}
+                        console.log(
+                          "[NDM] main opened, attempted immediate maximize",
+                        );
+                        // Quick fullscreen attempt as part of user gesture (may or may not be allowed)
+                        try {
+                          if (
+                            mainRef.document &&
+                            mainRef.document.documentElement &&
+                            mainRef.document.documentElement.requestFullscreen
+                          ) {
+                            mainRef.document.documentElement
+                              .requestFullscreen()
+                              .then(function () {
+                                console.log(
+                                  "[NDM] main window fullscreen success (sync)",
+                                );
+                              })
+                              .catch(function (err) {
+                                console.warn(
+                                  "[NDM] main window fullscreen failed (sync):",
+                                  err,
+                                );
+                              });
+                          }
+                        } catch (e) {
+                          console.warn(
+                            "[NDM] main fullscreen attempt threw:",
+                            e,
+                          );
+                        }
+                      } catch (e) {
+                        console.warn("[NDM] main immediate maximize threw:", e);
+                      }
+
+                      // Re-apply maximize and try fullscreen again on load; also schedule retries
+                      mainRef.addEventListener("load", function () {
+                        maximizeOnScreen(mainRef, mainScreen);
+                        try {
+                          mainRef.focus();
+                        } catch (e) {}
+                        console.log("[NDM] main load: maximize attempted");
+                        try {
+                          if (
+                            mainRef.document &&
+                            mainRef.document.documentElement &&
+                            mainRef.document.documentElement.requestFullscreen
+                          ) {
+                            mainRef.document.documentElement
+                              .requestFullscreen()
+                              .then(function () {
+                                console.log(
+                                  "[NDM] main window fullscreen success (onload)",
+                                );
+                              })
+                              .catch(function (err) {
+                                console.warn(
+                                  "[NDM] main window fullscreen failed (onload):",
+                                  err,
+                                );
+                              });
+                          }
+                        } catch (err) {
+                          console.warn(
+                            "[NDM] main fullscreen onload threw:",
+                            err,
+                          );
+                        }
+                      });
+
+                      // Retry maximize a few times after opening (some window managers take time)
+                      [100, 400, 1200].forEach(function (d) {
+                        setTimeout(function () {
+                          try {
+                            maximizeOnScreen(mainRef, mainScreen);
+                          } catch (e) {}
+                        }, d);
+                      });
+
+                      // After retries, log current geometry
+                      setTimeout(function () {
+                        try {
+                          console.log("[NDM] main geometry", {
+                            outerWidth: mainRef.outerWidth,
+                            outerHeight: mainRef.outerHeight,
+                            screenX: mainRef.screenX,
+                            screenY: mainRef.screenY,
+                          });
+                        } catch (e) {}
+                      }, 1400);
+                    }
+                  }
+
+                  // Open portrait on display 2
+                  if (portRef && !portRef.closed) {
+                    portRef.focus();
+                    maximizeOnScreen(portRef, portScreen);
+                  } else {
+                    var pf =
+                      "popup=yes,left=" +
+                      portScreen.availLeft +
+                      ",top=" +
+                      portScreen.availTop +
+                      ",width=" +
+                      portScreen.availWidth +
+                      ",height=" +
+                      portScreen.availHeight;
+                    // Open portrait window and mark as machaa role
+                    portRef = window.open(
+                      "/machaa-mode/portrait?machaa=1&role=portrait",
+                      "NDM_MACHA_MODE_PORTRAIT",
+                      pf,
+                    );
+                    if (portRef) {
+                      try {
+                        // immediate maximize + focus
+                        maximizeOnScreen(portRef, portScreen);
+                        try {
+                          portRef.focus();
+                        } catch (e) {}
+                        console.log(
+                          "[NDM] portrait opened, attempted immediate maximize",
+                        );
+
+                        // Quick fullscreen attempt as part of gesture
+                        try {
+                          if (
+                            portRef.document &&
+                            portRef.document.documentElement &&
+                            portRef.document.documentElement.requestFullscreen
+                          ) {
+                            portRef.document.documentElement
+                              .requestFullscreen()
+                              .then(function () {
+                                console.log(
+                                  "[NDM] portrait fullscreen success (sync)",
+                                );
+                              })
+                              .catch(function (err) {
+                                console.warn(
+                                  "[NDM] portrait fullscreen failed (sync):",
+                                  err,
+                                );
+                              });
+                          }
+                        } catch (e) {
+                          console.warn(
+                            "[NDM] portrait fullscreen attempt threw:",
+                            e,
+                          );
+                        }
+                      } catch (e) {
+                        console.warn(
+                          "[NDM] portrait immediate maximize threw:",
+                          e,
+                        );
+                      }
+
+                      portRef.addEventListener("load", function () {
+                        maximizeOnScreen(portRef, portScreen);
+                        try {
+                          portRef.focus();
+                        } catch (e) {}
+                        console.log("[NDM] portrait load: maximize attempted");
+                        try {
+                          if (
+                            portRef.document &&
+                            portRef.document.documentElement &&
+                            portRef.document.documentElement.requestFullscreen
+                          ) {
+                            portRef.document.documentElement
+                              .requestFullscreen()
+                              .then(function () {
+                                console.log(
+                                  "[NDM] portrait fullscreen success (onload)",
+                                );
+                              })
+                              .catch(function (err) {
+                                console.warn(
+                                  "[NDM] portrait fullscreen failed (onload):",
+                                  err,
+                                );
+                              });
+                          }
+                        } catch (err) {
+                          console.warn(
+                            "[NDM] portrait fullscreen onload threw:",
+                            err,
+                          );
+                        }
+                      });
+
+                      [120, 420, 1300].forEach(function (d) {
+                        setTimeout(function () {
+                          try {
+                            maximizeOnScreen(portRef, portScreen);
+                          } catch (e) {}
+                        }, d);
+                      });
+
+                      setTimeout(function () {
+                        try {
+                          console.log("[NDM] portrait geometry", {
+                            outerWidth: portRef.outerWidth,
+                            outerHeight: portRef.outerHeight,
+                            screenX: portRef.screenX,
+                            screenY: portRef.screenY,
+                          });
+                        } catch (e) {}
+                      }, 1500);
+                    }
+                  }
+
+                  var blocked = !mainRef || !portRef;
+                  var msg = document.getElementById("machaaModeMsg");
+                  if (msg) msg.style.display = blocked ? "flex" : "none";
+                }
+
+                function go() {
+                  console.log("[NDM] Machaa Mode clicked");
+                  // Try the multi-screen Window Management API first
+                  if ("getScreenDetails" in window) {
+                    window
+                      .getScreenDetails()
+                      .then(function (details) {
+                        var screens = Array.from(details.screens).sort(
+                          function (a, b) {
+                            return a.availLeft - b.availLeft;
+                          },
+                        );
+                        console.log(
+                          "[NDM] Detected " + screens.length + " screen(s)",
+                        );
+                        openAndPlace(screens);
+                      })
+                      .catch(function (err) {
+                        console.warn(
+                          "[NDM] Screen details denied, using fallback:",
+                          err,
+                        );
+                        openAndPlace([screen]);
+                      });
+                  } else {
+                    // Fallback: use hardcoded positions
+                    var fakeS1 = {
+                      availLeft: 0,
+                      availTop: 0,
+                      availWidth: screen.availWidth,
+                      availHeight: screen.availHeight,
+                    };
+                    var fakeS2 = {
+                      availLeft: screen.width,
+                      availTop: 0,
+                      availWidth: 1080,
+                      availHeight: 1920,
+                    };
+                    openAndPlace([fakeS1, fakeS2]);
+                  }
+                }
+
+                document
+                  .getElementById("machaaModeBtn")
+                  .addEventListener("click", go);
+                var retry = document.querySelector(".machaa-mode-retry");
+                if (retry) retry.addEventListener("click", go);
+              })();
+            </script>
           </header>
 
           <div class="app-content">
@@ -201,6 +523,43 @@
         typeof window.ProfileStore !== "undefined",
         window.ProfileStore,
       );
+
+      // If this window was opened by Machaa Mode, attempt a best-effort fullscreen
+      (function () {
+        try {
+          const params = new URLSearchParams(location.search);
+          if (params.get("machaa") === "1") {
+            const role = params.get("role") || "unknown";
+            console.log("[NDM] Machaa child window load, role=", role);
+            // Try to request fullscreen - note: many browsers will block fullscreen unless the request is part
+            // of the original user gesture. We still attempt it as a best-effort: it will succeed in some cases
+            // and fail in others. Regardless, we also maximize via moveTo/resizeTo as a reliable fallback.
+            try {
+              if (document.documentElement.requestFullscreen) {
+                document.documentElement
+                  .requestFullscreen()
+                  .then(() => {
+                    console.log("[NDM] child fullscreen success");
+                  })
+                  .catch((err) => {
+                    console.warn("[NDM] child fullscreen failed:", err);
+                    try {
+                      window.moveTo(0, 0);
+                      window.resizeTo(screen.availWidth, screen.availHeight);
+                    } catch (e) {}
+                  });
+              } else {
+                try {
+                  window.moveTo(0, 0);
+                  window.resizeTo(screen.availWidth, screen.availHeight);
+                } catch (e) {}
+              }
+            } catch (e) {
+              console.warn("[NDM] child fullscreen attempt threw:", e);
+            }
+          }
+        } catch (e) {}
+      })();
     </script>
     <script src="/static/ui.js"></script>
   </body>

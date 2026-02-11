@@ -3,6 +3,17 @@ const LOG_PREFIX = "[VoiceLookup]";
 
 console.log(LOG_PREFIX, "service worker loaded");
 
+// Load keep-alive module (additive, feature-flagged)
+try {
+  importScripts("keep_voice_alive.js");
+} catch (e) {
+  console.warn(
+    LOG_PREFIX,
+    "failed to import keep_voice_alive module",
+    e?.message || e,
+  );
+}
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message?.type !== "incoming_call") return;
 

@@ -233,6 +233,12 @@ def ui():
     return HTMLResponse(content=html)
 
 
+@app.get("/machaa-mode/portrait", response_class=HTMLResponse)
+def machaa_mode_portrait():
+    html = (TEMPLATES_DIR / "machaa_mode_portrait.html").read_text(encoding="utf-8")
+    return HTMLResponse(content=html)
+
+
 @app.get("/profile-data/{digits}")
 def profile_data(digits: str):
     profile = profile_store.load_profile(digits)

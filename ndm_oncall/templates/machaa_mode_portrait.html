@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Machaa Mode - Portrait</title>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 20px;
+        font-family: "Segoe UI", sans-serif;
+        color: #f5f7fa;
+        background: linear-gradient(180deg, #0a0f1c 0%, #070a12 100%);
+        line-height: 1.6;
+      }
+      .container {
+        max-width: 700px;
+        margin: 0 auto;
+      }
+      h1 {
+        font-size: 28px;
+        margin: 0 0 24px;
+        color: #ffc83d;
+        letter-spacing: 1px;
+      }
+      h2 {
+        font-size: 20px;
+        margin: 28px 0 12px;
+        color: #ffdb6c;
+      }
+      p {
+        margin: 0 0 16px;
+        color: rgba(245, 247, 250, 0.85);
+      }
+      ul {
+        margin: 0 0 20px;
+        padding-left: 24px;
+      }
+      li {
+        margin-bottom: 10px;
+        color: rgba(245, 247, 250, 0.85);
+      }
+      .section {
+        margin-bottom: 32px;
+        padding: 20px;
+        background: rgba(18, 28, 47, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Interview Cheat Sheet</h1>
+
+      <div class="section">
+        <h2>Key Talking Points</h2>
+        <ul>
+          <li>Start with context: confirm role, team size, current roadmap</li>
+          <li>Ask about biggest pain points or challenges</li>
+          <li>Align candidate experience to team needs</li>
+          <li>Close with hiring timeline and next steps</li>
+        </ul>
+      </div>
+
+      <div class="section">
+        <h2>Questions to Ask</h2>
+        <p>What does success look like in the first 30, 60, and 90 days?</p>
+        <p>What are the current technical challenges the team is facing?</p>
+        <p>How does the team collaborate and communicate daily?</p>
+      </div>
+
+      <div class="section">
+        <h2>Common Objections</h2>
+        <p>
+          <strong>Concern about scope:</strong> Reframe around outcomes and
+          proven delivery cadence. Offer to share decision docs or examples.
+        </p>
+        <p>
+          <strong>Technical depth questions:</strong> Highlight systems design
+          thinking and measurable impact on past projects.
+        </p>
+      </div>
+
+      <div class="section">
+        <h2>Key Metrics to Mention</h2>
+        <ul>
+          <li>Performance improvements delivered</li>
+          <li>Team velocity and ship cadence</li>
+          <li>User satisfaction or retention gains</li>
+          <li>Cross-functional collaboration examples</li>
+        </ul>
+      </div>
+
+      <div class="section">
+        <h2>Closing Notes</h2>
+        <p>
+          Confirm next steps clearly. Ask for feedback on fit. Express
+          enthusiasm for the role and team mission.
+        </p>
+      </div>
+    </div>
+    <script>
+      // Auto-maximize this window on its current screen
+      (function () {
+        function maximize() {
+          try {
+            window.moveTo(window.screenX, window.screenY);
+            if ("getScreenDetails" in window) {
+              window
+                .getScreenDetails()
+                .then(function (details) {
+                  // Find which screen this window is on
+                  var screens = Array.from(details.screens);
+                  var myScreen =
+                    screens.find(function (s) {
+                      return (
+                        window.screenX >= s.availLeft &&
+                        window.screenX < s.availLeft + s.availWidth
+                      );
+                    }) || details.currentScreen;
+                  window.moveTo(myScreen.availLeft, myScreen.availTop);
+                  window.resizeTo(myScreen.availWidth, myScreen.availHeight);
+                })
+                .catch(function () {
+                  window.moveTo(
+                    window.screen.availLeft || 0,
+                    window.screen.availTop || 0,
+                  );
+                  window.resizeTo(
+                    window.screen.availWidth,
+                    window.screen.availHeight,
+                  );
+                });
+            } else {
+              window.moveTo(
+                window.screen.availLeft || 0,
+                window.screen.availTop || 0,
+              );
+              window.resizeTo(
+                window.screen.availWidth,
+                window.screen.availHeight,
+              );
+            }
+          } catch (e) {
+            console.warn("[NDM Portrait] maximize failed:", e);
+          }
+        }
+        maximize();
+        // Retry after a brief delay in case the window manager hasn't finished positioning
+        setTimeout(maximize, 300);
+
+        // Best-effort fullscreen attempt when opened via Machaa Mode. Note:
+        // Browsers typically only allow requestFullscreen() in direct response to a user gesture.
+        // We attempt it here as a 'best-effort' — it will succeed on some browsers and fail (silently) on others.
+        (function () {
+          try {
+            var params = new URLSearchParams(location.search);
+            if (params.get("machaa") === "1") {
+              try {
+                // Immediate attempt to fullscreen (may be blocked). If blocked, maximize as fallback.
+                if (document.documentElement.requestFullscreen) {
+                  document.documentElement
+                    .requestFullscreen()
+                    .then(function () {
+                      console.log("[NDM Portrait] fullscreen success");
+                    })
+                    .catch(function (err) {
+                      console.warn("[NDM Portrait] fullscreen failed:", err);
+                      // fallback to maximize
+                      setTimeout(maximize, 120);
+                    });
+                } else {
+                  setTimeout(maximize, 120);
+                }
+
+                // Also ensure we aggressively try to maximize and log geometry so we can detect issues
+                [80, 220, 520].forEach(function (d) {
+                  setTimeout(function () {
+                    try {
+                      maximize();
+                      console.log("[NDM Portrait] maximize retry at", d);
+                    } catch (e) {}
+                  }, d);
+                });
+
+                setTimeout(function () {
+                  try {
+                    console.log("[NDM Portrait] geometry", {
+                      outerWidth: window.outerWidth,
+                      outerHeight: window.outerHeight,
+                      screenX: window.screenX,
+                      screenY: window.screenY,
+                    });
+                  } catch (e) {}
+                }, 900);
+              } catch (e) {
+                console.warn("[NDM Portrait] fullscreen attempt threw:", e);
+                setTimeout(maximize, 120);
+              }
+            }
+          } catch (e) {}
+        })();
+      })();
+    </script>
+  </body>
+</html>

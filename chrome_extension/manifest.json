@@ -4,7 +4,12 @@
   "version": "0.1.0",
   "description": "Detect incoming Google Voice calls and look up caller number in Gmail via local service.",
   "permissions": [
-    "activeTab"
+    "activeTab",
+    "alarms",
+    "scripting",
+    "tabs",
+    "power",
+    "storage"
   ],
   "host_permissions": [
     "https://voice.google.com/*",
