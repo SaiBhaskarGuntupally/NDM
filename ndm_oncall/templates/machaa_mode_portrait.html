@@ -3,211 +3,455 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Machaa Mode - Portrait</title>
-    <style>
-      :root {
-        color-scheme: dark;
-      }
-      * {
-        box-sizing: border-box;
-      }
-      body {
-        margin: 0;
-        padding: 20px;
-        font-family: "Segoe UI", sans-serif;
-        color: #f5f7fa;
-        background: linear-gradient(180deg, #0a0f1c 0%, #070a12 100%);
-        line-height: 1.6;
-      }
-      .container {
-        max-width: 700px;
-        margin: 0 auto;
-      }
-      h1 {
-        font-size: 28px;
-        margin: 0 0 24px;
-        color: #ffc83d;
-        letter-spacing: 1px;
-      }
-      h2 {
-        font-size: 20px;
-        margin: 28px 0 12px;
-        color: #ffdb6c;
-      }
-      p {
-        margin: 0 0 16px;
-        color: rgba(245, 247, 250, 0.85);
-      }
-      ul {
-        margin: 0 0 20px;
-        padding-left: 24px;
-      }
-      li {
-        margin-bottom: 10px;
-        color: rgba(245, 247, 250, 0.85);
-      }
-      .section {
-        margin-bottom: 32px;
-        padding: 20px;
-        background: rgba(18, 28, 47, 0.6);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-      }
-    </style>
+    <title>Machaa Vendor Cockpit</title>
+    <link rel="stylesheet" href="/static/machaa_portrait.css" />
   </head>
   <body>
-    <div class="container">
-      <h1>Interview Cheat Sheet</h1>
+    <div class="machaa-portrait-root">
+      <section class="machaa-hot">
+        <div class="machaa-section-title">HOT 10 Questions</div>
+        <div class="machaa-hot-grid">
+          <div class="machaa-hot-item">
+            <button class="machaa-hot-btn" type="button" data-toggle="hot-1">
+              1. May I know where you got my profile from?
+            </button>
+            <div class="machaa-hot-panel" id="hot-1">
+              <div class="machaa-panel-row">
+                <span>If they ask:</span>
+                “We got your profile from our database. Can you confirm
+                interest?”
+              </div>
+              <div class="machaa-panel-row">
+                <span>You say:</span>
+                “Yes, I’m open. Please share the role details and client.”
+              </div>
+              <div class="machaa-panel-row">
+                <span>You ask back:</span>
+                “Was my profile submitted earlier for this role?”
+              </div>
+              <div class="machaa-panel-actions">
+                <button
+                  class="machaa-copy"
+                  type="button"
+                  data-copy="May I know where you got my profile from?"
+                >
+                  Copy question
+                </button>
+                <button
+                  class="machaa-copy"
+                  type="button"
+                  data-copy="Was my profile submitted earlier for this role?"
+                >
+                  Copy ask-back
+                </button>
+              </div>
+            </div>
+          </div>
 
-      <div class="section">
-        <h2>Key Talking Points</h2>
-        <ul>
-          <li>Start with context: confirm role, team size, current roadmap</li>
-          <li>Ask about biggest pain points or challenges</li>
-          <li>Align candidate experience to team needs</li>
-          <li>Close with hiring timeline and next steps</li>
-        </ul>
-      </div>
+          <div class="machaa-hot-item">
+            <button class="machaa-hot-btn" type="button" data-toggle="hot-2">
+              2. Is this a new requirement, or was my profile submitted earlier
+              for this role?
+            </button>
+            <div class="machaa-hot-panel" id="hot-2">
+              <div class="machaa-panel-row">
+                <span>If they ask:</span>
+                “We are checking if you’re already in the system.”
+              </div>
+              <div class="machaa-panel-row">
+                <span>You say:</span>
+                “I’m not sure. Please confirm on your side.”
+              </div>
+              <div class="machaa-panel-row">
+                <span>You ask back:</span>
+                “If it’s a duplicate, can you remove the earlier submission?”
+              </div>
+              <div class="machaa-panel-actions">
+                <button
+                  class="machaa-copy"
+                  type="button"
+                  data-copy="Is this a new requirement, or was my profile submitted earlier for this role?"
+                >
+                  Copy question
+                </button>
+                <button
+                  class="machaa-copy"
+                  type="button"
+                  data-copy="If it’s a duplicate, can you remove the earlier submission?"
+                >
+                  Copy ask-back
+                </button>
+              </div>
+            </div>
+          </div>
 
-      <div class="section">
-        <h2>Questions to Ask</h2>
-        <p>What does success look like in the first 30, 60, and 90 days?</p>
-        <p>What are the current technical challenges the team is facing?</p>
-        <p>How does the team collaborate and communicate daily?</p>
-      </div>
+          <div class="machaa-hot-item">
+            <button class="machaa-hot-btn" type="button" data-toggle="hot-3">
+              3. May I know the end client name?
+            </button>
+            <div class="machaa-hot-panel" id="hot-3">
+              <div class="machaa-panel-row">
+                <span>If they ask:</span>
+                “It’s confidential for now. Are you still interested?”
+              </div>
+              <div class="machaa-panel-row">
+                <span>You say:</span>
+                “I’m interested, but I need client context before moving.”
+              </div>
+              <div class="machaa-panel-row">
+                <span>You ask back:</span>
+                “Is the client name available after NDA or submission?”
+              </div>
+              <div class="machaa-panel-actions">
+                <button
+                  class="machaa-copy"
+                  type="button"
+                  data-copy="May I know the end client name?"
+                >
+                  Copy question
+                </button>
+                <button
+                  class="machaa-copy"
+                  type="button"
+                  data-copy="Is the client name available after NDA or submission?"
+                >
+                  Copy ask-back
+                </button>
+              </div>
+            </div>
+          </div>
 
-      <div class="section">
-        <h2>Common Objections</h2>
-        <p>
-          <strong>Concern about scope:</strong> Reframe around outcomes and
-          proven delivery cadence. Offer to share decision docs or examples.
-        </p>
-        <p>
-          <strong>Technical depth questions:</strong> Highlight systems design
-          thinking and measurable impact on past projects.
-        </p>
-      </div>
+          <div class="machaa-hot-item">
+            <button class="machaa-hot-btn" type="button" data-toggle="hot-4">
+              4. Is this your direct client, or are there any implementation
+              partners involved?
+            </button>
+            <div class="machaa-hot-panel" id="hot-4">
+              <div class="machaa-panel-row">
+                <span>If they ask:</span>
+                “We are the vendor; partners are involved.”
+              </div>
+              <div class="machaa-panel-row">
+                <span>You say:</span>
+                “Understood. I want to avoid duplicate submissions.”
+              </div>
+              <div class="machaa-panel-row">
+                <span>You ask back:</span>
+                “How many layers are between you and the end client?”
+              </div>
+              <div class="machaa-panel-actions">
+                <button
+                  class="machaa-copy"
+                  type="button"
+                  data-copy="Is this your direct client, or are there any implementation partners involved?"
+                >
+                  Copy question
+                </button>
+                <button
+                  class="machaa-copy"
+                  type="button"
+                  data-copy="How many layers are between you and the end client?"
+                >
+                  Copy ask-back
+                </button>
+              </div>
+            </div>
+          </div>
 
-      <div class="section">
-        <h2>Key Metrics to Mention</h2>
-        <ul>
-          <li>Performance improvements delivered</li>
-          <li>Team velocity and ship cadence</li>
-          <li>User satisfaction or retention gains</li>
-          <li>Cross-functional collaboration examples</li>
-        </ul>
-      </div>
+          <div class="machaa-hot-item">
+            <button class="machaa-hot-btn" type="button" data-toggle="hot-5">
+              5. Is this position W2, C2C, or contract-to-hire?
+            </button>
+            <div class="machaa-hot-panel" id="hot-5">
+              <div class="machaa-panel-row">
+                <span>If they ask:</span>
+                “What is your preferred engagement?”
+              </div>
+              <div class="machaa-panel-row">
+                <span>You say:</span>
+                “I’m flexible based on client need.”
+              </div>
+              <div class="machaa-panel-row">
+                <span>You ask back:</span>
+                “Which option is approved for this role?”
+              </div>
+              <div class="machaa-panel-actions">
+                <button
+                  class="machaa-copy"
+                  type="button"
+                  data-copy="Is this position W2, C2C, or contract-to-hire?"
+                >
+                  Copy question
+                </button>
+                <button
+                  class="machaa-copy"
+                  type="button"
+                  data-copy="Which option is approved for this role?"
+                >
+                  Copy ask-back
+                </button>
+              </div>
+            </div>
+          </div>
 
-      <div class="section">
-        <h2>Closing Notes</h2>
-        <p>
-          Confirm next steps clearly. Ask for feedback on fit. Express
-          enthusiasm for the role and team mission.
-        </p>
-      </div>
+          <div class="machaa-hot-item">
+            <button class="machaa-hot-btn" type="button" data-toggle="hot-6">
+              6. What is the approved rate range for this role?
+            </button>
+            <div class="machaa-hot-panel" id="hot-6">
+              <div class="machaa-panel-row">
+                <span>If they ask:</span>
+                “What rate are you expecting?”
+              </div>
+              <div class="machaa-panel-row">
+                <span>You say:</span>
+                “I’m open to a fair market rate for this role.”
+              </div>
+              <div class="machaa-panel-row">
+                <span>You ask back:</span>
+                “What is the approved rate range from the client?”
+              </div>
+              <div class="machaa-panel-actions">
+                <button
+                  class="machaa-copy"
+                  type="button"
+                  data-copy="What is the approved rate range for this role?"
+                >
+                  Copy question
+                </button>
+                <button
+                  class="machaa-copy"
+                  type="button"
+                  data-copy="What is the approved rate range from the client?"
+                >
+                  Copy ask-back
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="machaa-hot-item">
+            <button class="machaa-hot-btn" type="button" data-toggle="hot-7">
+              7. Is there any specific visa requirement from the client side?
+            </button>
+            <div class="machaa-hot-panel" id="hot-7">
+              <div class="machaa-panel-row">
+                <span>If they ask:</span>
+                “What visa do you have?”
+              </div>
+              <div class="machaa-panel-row">
+                <span>You say:</span>
+                “I’m eligible to work. Let’s align to client requirements.”
+              </div>
+              <div class="machaa-panel-row">
+                <span>You ask back:</span>
+                “Is there a specific visa requirement from the client?”
+              </div>
+              <div class="machaa-panel-actions">
+                <button
+                  class="machaa-copy"
+                  type="button"
+                  data-copy="Is there any specific visa requirement from the client side?"
+                >
+                  Copy question
+                </button>
+                <button
+                  class="machaa-copy"
+                  type="button"
+                  data-copy="Is there a specific visa requirement from the client?"
+                >
+                  Copy ask-back
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="machaa-hot-item">
+            <button class="machaa-hot-btn" type="button" data-toggle="hot-8">
+              8. At what stage is passport required—submission or client
+              interview?
+            </button>
+            <div class="machaa-hot-panel" id="hot-8">
+              <div class="machaa-panel-row">
+                <span>If they ask:</span>
+                “Can you share your passport now?”
+              </div>
+              <div class="machaa-panel-row">
+                <span>You say:</span>
+                “I can share at the right stage per client policy.”
+              </div>
+              <div class="machaa-panel-row">
+                <span>You ask back:</span>
+                “At what stage is passport required for this client?”
+              </div>
+              <div class="machaa-panel-actions">
+                <button
+                  class="machaa-copy"
+                  type="button"
+                  data-copy="At what stage is passport required—submission or client interview?"
+                >
+                  Copy question
+                </button>
+                <button
+                  class="machaa-copy"
+                  type="button"
+                  data-copy="At what stage is passport required for this client?"
+                >
+                  Copy ask-back
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="machaa-hot-item">
+            <button class="machaa-hot-btn" type="button" data-toggle="hot-9">
+              9. Has the client already started interviewing, and is this role
+              actively moving forward?
+            </button>
+            <div class="machaa-hot-panel" id="hot-9">
+              <div class="machaa-panel-row">
+                <span>If they ask:</span>
+                “We are collecting profiles. Are you available?”
+              </div>
+              <div class="machaa-panel-row">
+                <span>You say:</span>
+                “Yes, I’m available. I’d like to understand the timeline.”
+              </div>
+              <div class="machaa-panel-row">
+                <span>You ask back:</span>
+                “Are interviews already in progress?”
+              </div>
+              <div class="machaa-panel-actions">
+                <button
+                  class="machaa-copy"
+                  type="button"
+                  data-copy="Has the client already started interviewing, and is this role actively moving forward?"
+                >
+                  Copy question
+                </button>
+                <button
+                  class="machaa-copy"
+                  type="button"
+                  data-copy="Are interviews already in progress?"
+                >
+                  Copy ask-back
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="machaa-hot-item">
+            <button class="machaa-hot-btn" type="button" data-toggle="hot-10">
+              10. What are the next steps from your side, and when should I
+              expect an update?
+            </button>
+            <div class="machaa-hot-panel" id="hot-10">
+              <div class="machaa-panel-row">
+                <span>If they ask:</span>
+                “We will follow up once we hear back.”
+              </div>
+              <div class="machaa-panel-row">
+                <span>You say:</span>
+                “Great, I’ll wait for your update.”
+              </div>
+              <div class="machaa-panel-row">
+                <span>You ask back:</span>
+                “What timeline should I expect for feedback?”
+              </div>
+              <div class="machaa-panel-actions">
+                <button
+                  class="machaa-copy"
+                  type="button"
+                  data-copy="What are the next steps from your side, and when should I expect an update?"
+                >
+                  Copy question
+                </button>
+                <button
+                  class="machaa-copy"
+                  type="button"
+                  data-copy="What timeline should I expect for feedback?"
+                >
+                  Copy ask-back
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="machaa-branch">
+        <div class="machaa-section-title">Branch Cards</div>
+        <div class="machaa-branch-grid">
+          <button class="machaa-branch-btn" type="button" data-branch="intro">
+            Vendor asked: Introduce yourself
+          </button>
+          <button class="machaa-branch-btn" type="button" data-branch="visa">
+            Vendor asked: Visa / Passport
+          </button>
+          <button class="machaa-branch-btn" type="button" data-branch="jd">
+            Vendor started JD directly
+          </button>
+        </div>
+        <div class="machaa-branch-card" id="machaaBranchCard"></div>
+      </section>
+
+      <section class="machaa-library">
+        <div class="machaa-section-title">Cheat Sheet Library</div>
+        <div class="machaa-library-scroll">
+          <details open>
+            <summary>Interview Cheat Sheet</summary>
+            <div class="machaa-library-body">
+              <h4>Key Talking Points</h4>
+              <ul>
+                <li>
+                  Start with context: confirm role, team size, current roadmap
+                </li>
+                <li>Ask about biggest pain points or challenges</li>
+                <li>Align candidate experience to team needs</li>
+                <li>Close with hiring timeline and next steps</li>
+              </ul>
+              <h4>Questions to Ask</h4>
+              <ul>
+                <li>
+                  What does success look like in the first 30, 60, and 90 days?
+                </li>
+                <li>
+                  What are the current technical challenges the team is facing?
+                </li>
+                <li>How does the team collaborate and communicate daily?</li>
+              </ul>
+              <h4>Common Objections</h4>
+              <ul>
+                <li>
+                  Concern about scope: Reframe around outcomes and proven
+                  delivery cadence. Offer to share decision docs or examples.
+                </li>
+                <li>
+                  Technical depth questions: Highlight systems design thinking
+                  and measurable impact on past projects.
+                </li>
+              </ul>
+              <h4>Key Metrics to Mention</h4>
+              <ul>
+                <li>Performance improvements delivered</li>
+                <li>Team velocity and ship cadence</li>
+                <li>User satisfaction or retention gains</li>
+                <li>Cross-functional collaboration examples</li>
+              </ul>
+              <h4>Closing Notes</h4>
+              <ul>
+                <li>
+                  Confirm next steps clearly. Ask for feedback on fit. Express
+                  enthusiasm for the role and team mission.
+                </li>
+              </ul>
+            </div>
+          </details>
+        </div>
+      </section>
     </div>
-    <script>
-      // Auto-maximize this window on its current screen
-      (function () {
-        function maximize() {
-          try {
-            window.moveTo(window.screenX, window.screenY);
-            if ("getScreenDetails" in window) {
-              window
-                .getScreenDetails()
-                .then(function (details) {
-                  // Find which screen this window is on
-                  var screens = Array.from(details.screens);
-                  var myScreen =
-                    screens.find(function (s) {
-                      return (
-                        window.screenX >= s.availLeft &&
-                        window.screenX < s.availLeft + s.availWidth
-                      );
-                    }) || details.currentScreen;
-                  window.moveTo(myScreen.availLeft, myScreen.availTop);
-                  window.resizeTo(myScreen.availWidth, myScreen.availHeight);
-                })
-                .catch(function () {
-                  window.moveTo(
-                    window.screen.availLeft || 0,
-                    window.screen.availTop || 0,
-                  );
-                  window.resizeTo(
-                    window.screen.availWidth,
-                    window.screen.availHeight,
-                  );
-                });
-            } else {
-              window.moveTo(
-                window.screen.availLeft || 0,
-                window.screen.availTop || 0,
-              );
-              window.resizeTo(
-                window.screen.availWidth,
-                window.screen.availHeight,
-              );
-            }
-          } catch (e) {
-            console.warn("[NDM Portrait] maximize failed:", e);
-          }
-        }
-        maximize();
-        // Retry after a brief delay in case the window manager hasn't finished positioning
-        setTimeout(maximize, 300);
 
-        // Best-effort fullscreen attempt when opened via Machaa Mode. Note:
-        // Browsers typically only allow requestFullscreen() in direct response to a user gesture.
-        // We attempt it here as a 'best-effort' — it will succeed on some browsers and fail (silently) on others.
-        (function () {
-          try {
-            var params = new URLSearchParams(location.search);
-            if (params.get("machaa") === "1") {
-              try {
-                // Immediate attempt to fullscreen (may be blocked). If blocked, maximize as fallback.
-                if (document.documentElement.requestFullscreen) {
-                  document.documentElement
-                    .requestFullscreen()
-                    .then(function () {
-                      console.log("[NDM Portrait] fullscreen success");
-                    })
-                    .catch(function (err) {
-                      console.warn("[NDM Portrait] fullscreen failed:", err);
-                      // fallback to maximize
-                      setTimeout(maximize, 120);
-                    });
-                } else {
-                  setTimeout(maximize, 120);
-                }
-
-                // Also ensure we aggressively try to maximize and log geometry so we can detect issues
-                [80, 220, 520].forEach(function (d) {
-                  setTimeout(function () {
-                    try {
-                      maximize();
-                      console.log("[NDM Portrait] maximize retry at", d);
-                    } catch (e) {}
-                  }, d);
-                });
-
-                setTimeout(function () {
-                  try {
-                    console.log("[NDM Portrait] geometry", {
-                      outerWidth: window.outerWidth,
-                      outerHeight: window.outerHeight,
-                      screenX: window.screenX,
-                      screenY: window.screenY,
-                    });
-                  } catch (e) {}
-                }, 900);
-              } catch (e) {
-                console.warn("[NDM Portrait] fullscreen attempt threw:", e);
-                setTimeout(maximize, 120);
-              }
-            }
-          } catch (e) {}
-        })();
-      })();
-    </script>
+    <div class="machaa-toast" id="machaaToast" role="status">Copied</div>
+    <script src="/static/machaa_portrait.js"></script>
   </body>
 </html>
