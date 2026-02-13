@@ -1,457 +1,331 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Machaa Vendor Cockpit</title>
-    <link rel="stylesheet" href="/static/machaa_portrait.css" />
-  </head>
-  <body>
-    <div class="machaa-portrait-root">
-      <section class="machaa-hot">
-        <div class="machaa-section-title">HOT 10 Questions</div>
-        <div class="machaa-hot-grid">
-          <div class="machaa-hot-item">
-            <button class="machaa-hot-btn" type="button" data-toggle="hot-1">
-              1. May I know where you got my profile from?
-            </button>
-            <div class="machaa-hot-panel" id="hot-1">
-              <div class="machaa-panel-row">
-                <span>If they ask:</span>
-                “We got your profile from our database. Can you confirm
-                interest?”
-              </div>
-              <div class="machaa-panel-row">
-                <span>You say:</span>
-                “Yes, I’m open. Please share the role details and client.”
-              </div>
-              <div class="machaa-panel-row">
-                <span>You ask back:</span>
-                “Was my profile submitted earlier for this role?”
-              </div>
-              <div class="machaa-panel-actions">
-                <button
-                  class="machaa-copy"
-                  type="button"
-                  data-copy="May I know where you got my profile from?"
-                >
-                  Copy question
-                </button>
-                <button
-                  class="machaa-copy"
-                  type="button"
-                  data-copy="Was my profile submitted earlier for this role?"
-                >
-                  Copy ask-back
-                </button>
-              </div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Vendor Call Cockpit</title>
+    <link rel="stylesheet" href="/static/machaa_portrait.css?v=202602121640">
+</head>
+<body>
+    <!-- PORTRAIT COCKPIT ROOT -->
+    <div id="portraitCockpit">
+        
+        <!-- ZONE A: TOP CONTROL BAR (20%) -->
+        <div id="topBar">
+            <!-- Call Identity Row -->
+            <div class="control-row">
+                <div class="field-group">
+                    <label>Vendor:</label>
+                    <input type="text" id="vendorName" class="chip-input" placeholder="Company Name">
+                </div>
+                <div class="field-group">
+                    <label>Source:</label>
+                    <div class="chip-selector" id="sourceSelector">
+                        <button class="chip" data-value="Monster">Monster</button>
+                        <button class="chip" data-value="Dice">Dice</button>
+                        <button class="chip" data-value="LinkedIn">LinkedIn</button>
+                        <button class="chip" data-value="DB">DB</button>
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label>Caller last4:</label>
+                    <span id="callerLast4" class="readonly-text">____</span>
+                </div>
+                <div class="field-group">
+                    <label>Timer:</label>
+                    <span id="callTimer" class="readonly-text">00:00</span>
+                </div>
             </div>
-          </div>
 
-          <div class="machaa-hot-item">
-            <button class="machaa-hot-btn" type="button" data-toggle="hot-2">
-              2. Is this a new requirement, or was my profile submitted earlier
-              for this role?
-            </button>
-            <div class="machaa-hot-panel" id="hot-2">
-              <div class="machaa-panel-row">
-                <span>If they ask:</span>
-                “We are checking if you’re already in the system.”
-              </div>
-              <div class="machaa-panel-row">
-                <span>You say:</span>
-                “I’m not sure. Please confirm on your side.”
-              </div>
-              <div class="machaa-panel-row">
-                <span>You ask back:</span>
-                “If it’s a duplicate, can you remove the earlier submission?”
-              </div>
-              <div class="machaa-panel-actions">
-                <button
-                  class="machaa-copy"
-                  type="button"
-                  data-copy="Is this a new requirement, or was my profile submitted earlier for this role?"
-                >
-                  Copy question
-                </button>
-                <button
-                  class="machaa-copy"
-                  type="button"
-                  data-copy="If it’s a duplicate, can you remove the earlier submission?"
-                >
-                  Copy ask-back
-                </button>
-              </div>
+            <!-- Deal Qualifiers Row -->
+            <div class="control-row">
+                <div class="field-group">
+                    <label>Client:</label>
+                    <input type="text" id="clientName" class="chip-input" placeholder="Client Name">
+                </div>
+                <div class="field-group">
+                    <label>Structure:</label>
+                    <div class="segmented-control" id="structureControl">
+                        <button class="segment" data-value="W2">W2</button>
+                        <button class="segment" data-value="C2C">C2C</button>
+                        <button class="segment" data-value="C2H">C2H</button>
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label>Rate:</label>
+                    <input type="text" id="rateInput" class="chip-input" placeholder="$__/hr">
+                </div>
+                <div class="field-group">
+                    <label>Visa Req:</label>
+                    <div class="chip-selector" id="visaSelector">
+                        <button class="chip" data-value="None">None</button>
+                        <button class="chip" data-value="USC">USC</button>
+                        <button class="chip" data-value="GC">GC</button>
+                        <button class="chip" data-value="EAD">EAD</button>
+                        <button class="chip" data-value="H1B">H1B</button>
+                    </div>
+                </div>
             </div>
-          </div>
 
-          <div class="machaa-hot-item">
-            <button class="machaa-hot-btn" type="button" data-toggle="hot-3">
-              3. May I know the end client name?
-            </button>
-            <div class="machaa-hot-panel" id="hot-3">
-              <div class="machaa-panel-row">
-                <span>If they ask:</span>
-                “It’s confidential for now. Are you still interested?”
-              </div>
-              <div class="machaa-panel-row">
-                <span>You say:</span>
-                “I’m interested, but I need client context before moving.”
-              </div>
-              <div class="machaa-panel-row">
-                <span>You ask back:</span>
-                “Is the client name available after NDA or submission?”
-              </div>
-              <div class="machaa-panel-actions">
-                <button
-                  class="machaa-copy"
-                  type="button"
-                  data-copy="May I know the end client name?"
-                >
-                  Copy question
-                </button>
-                <button
-                  class="machaa-copy"
-                  type="button"
-                  data-copy="Is the client name available after NDA or submission?"
-                >
-                  Copy ask-back
-                </button>
-              </div>
+            <!-- Call State Row -->
+            <div class="control-row">
+                <div class="field-group wide">
+                    <label>Call State:</label>
+                    <div class="segmented-control" id="callStateControl">
+                        <button class="segment" data-state="Screening">Screening</button>
+                        <button class="segment" data-state="Requirement">Requirement</button>
+                        <button class="segment" data-state="Rate">Rate</button>
+                        <button class="segment" data-state="Docs">Docs</button>
+                        <button class="segment" data-state="Close">Close</button>
+                    </div>
+                </div>
+                <div class="field-group wide">
+                    <label>Next Action:</label>
+                    <span id="nextAction" class="next-action-text">Ask: Where did you get my profile from?</span>
+                </div>
             </div>
-          </div>
 
-          <div class="machaa-hot-item">
-            <button class="machaa-hot-btn" type="button" data-toggle="hot-4">
-              4. Is this your direct client, or are there any implementation
-              partners involved?
-            </button>
-            <div class="machaa-hot-panel" id="hot-4">
-              <div class="machaa-panel-row">
-                <span>If they ask:</span>
-                “We are the vendor; partners are involved.”
-              </div>
-              <div class="machaa-panel-row">
-                <span>You say:</span>
-                “Understood. I want to avoid duplicate submissions.”
-              </div>
-              <div class="machaa-panel-row">
-                <span>You ask back:</span>
-                “How many layers are between you and the end client?”
-              </div>
-              <div class="machaa-panel-actions">
-                <button
-                  class="machaa-copy"
-                  type="button"
-                  data-copy="Is this your direct client, or are there any implementation partners involved?"
-                >
-                  Copy question
-                </button>
-                <button
-                  class="machaa-copy"
-                  type="button"
-                  data-copy="How many layers are between you and the end client?"
-                >
-                  Copy ask-back
-                </button>
-              </div>
+            <!-- Hotkey Hint -->
+            <div class="control-row hotkey-row">
+                <span class="hotkey-hint">Ctrl+Space Fullscreen</span>
             </div>
-          </div>
-
-          <div class="machaa-hot-item">
-            <button class="machaa-hot-btn" type="button" data-toggle="hot-5">
-              5. Is this position W2, C2C, or contract-to-hire?
-            </button>
-            <div class="machaa-hot-panel" id="hot-5">
-              <div class="machaa-panel-row">
-                <span>If they ask:</span>
-                “What is your preferred engagement?”
-              </div>
-              <div class="machaa-panel-row">
-                <span>You say:</span>
-                “I’m flexible based on client need.”
-              </div>
-              <div class="machaa-panel-row">
-                <span>You ask back:</span>
-                “Which option is approved for this role?”
-              </div>
-              <div class="machaa-panel-actions">
-                <button
-                  class="machaa-copy"
-                  type="button"
-                  data-copy="Is this position W2, C2C, or contract-to-hire?"
-                >
-                  Copy question
-                </button>
-                <button
-                  class="machaa-copy"
-                  type="button"
-                  data-copy="Which option is approved for this role?"
-                >
-                  Copy ask-back
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="machaa-hot-item">
-            <button class="machaa-hot-btn" type="button" data-toggle="hot-6">
-              6. What is the approved rate range for this role?
-            </button>
-            <div class="machaa-hot-panel" id="hot-6">
-              <div class="machaa-panel-row">
-                <span>If they ask:</span>
-                “What rate are you expecting?”
-              </div>
-              <div class="machaa-panel-row">
-                <span>You say:</span>
-                “I’m open to a fair market rate for this role.”
-              </div>
-              <div class="machaa-panel-row">
-                <span>You ask back:</span>
-                “What is the approved rate range from the client?”
-              </div>
-              <div class="machaa-panel-actions">
-                <button
-                  class="machaa-copy"
-                  type="button"
-                  data-copy="What is the approved rate range for this role?"
-                >
-                  Copy question
-                </button>
-                <button
-                  class="machaa-copy"
-                  type="button"
-                  data-copy="What is the approved rate range from the client?"
-                >
-                  Copy ask-back
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="machaa-hot-item">
-            <button class="machaa-hot-btn" type="button" data-toggle="hot-7">
-              7. Is there any specific visa requirement from the client side?
-            </button>
-            <div class="machaa-hot-panel" id="hot-7">
-              <div class="machaa-panel-row">
-                <span>If they ask:</span>
-                “What visa do you have?”
-              </div>
-              <div class="machaa-panel-row">
-                <span>You say:</span>
-                “I’m eligible to work. Let’s align to client requirements.”
-              </div>
-              <div class="machaa-panel-row">
-                <span>You ask back:</span>
-                “Is there a specific visa requirement from the client?”
-              </div>
-              <div class="machaa-panel-actions">
-                <button
-                  class="machaa-copy"
-                  type="button"
-                  data-copy="Is there any specific visa requirement from the client side?"
-                >
-                  Copy question
-                </button>
-                <button
-                  class="machaa-copy"
-                  type="button"
-                  data-copy="Is there a specific visa requirement from the client?"
-                >
-                  Copy ask-back
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="machaa-hot-item">
-            <button class="machaa-hot-btn" type="button" data-toggle="hot-8">
-              8. At what stage is passport required—submission or client
-              interview?
-            </button>
-            <div class="machaa-hot-panel" id="hot-8">
-              <div class="machaa-panel-row">
-                <span>If they ask:</span>
-                “Can you share your passport now?”
-              </div>
-              <div class="machaa-panel-row">
-                <span>You say:</span>
-                “I can share at the right stage per client policy.”
-              </div>
-              <div class="machaa-panel-row">
-                <span>You ask back:</span>
-                “At what stage is passport required for this client?”
-              </div>
-              <div class="machaa-panel-actions">
-                <button
-                  class="machaa-copy"
-                  type="button"
-                  data-copy="At what stage is passport required—submission or client interview?"
-                >
-                  Copy question
-                </button>
-                <button
-                  class="machaa-copy"
-                  type="button"
-                  data-copy="At what stage is passport required for this client?"
-                >
-                  Copy ask-back
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="machaa-hot-item">
-            <button class="machaa-hot-btn" type="button" data-toggle="hot-9">
-              9. Has the client already started interviewing, and is this role
-              actively moving forward?
-            </button>
-            <div class="machaa-hot-panel" id="hot-9">
-              <div class="machaa-panel-row">
-                <span>If they ask:</span>
-                “We are collecting profiles. Are you available?”
-              </div>
-              <div class="machaa-panel-row">
-                <span>You say:</span>
-                “Yes, I’m available. I’d like to understand the timeline.”
-              </div>
-              <div class="machaa-panel-row">
-                <span>You ask back:</span>
-                “Are interviews already in progress?”
-              </div>
-              <div class="machaa-panel-actions">
-                <button
-                  class="machaa-copy"
-                  type="button"
-                  data-copy="Has the client already started interviewing, and is this role actively moving forward?"
-                >
-                  Copy question
-                </button>
-                <button
-                  class="machaa-copy"
-                  type="button"
-                  data-copy="Are interviews already in progress?"
-                >
-                  Copy ask-back
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="machaa-hot-item">
-            <button class="machaa-hot-btn" type="button" data-toggle="hot-10">
-              10. What are the next steps from your side, and when should I
-              expect an update?
-            </button>
-            <div class="machaa-hot-panel" id="hot-10">
-              <div class="machaa-panel-row">
-                <span>If they ask:</span>
-                “We will follow up once we hear back.”
-              </div>
-              <div class="machaa-panel-row">
-                <span>You say:</span>
-                “Great, I’ll wait for your update.”
-              </div>
-              <div class="machaa-panel-row">
-                <span>You ask back:</span>
-                “What timeline should I expect for feedback?”
-              </div>
-              <div class="machaa-panel-actions">
-                <button
-                  class="machaa-copy"
-                  type="button"
-                  data-copy="What are the next steps from your side, and when should I expect an update?"
-                >
-                  Copy question
-                </button>
-                <button
-                  class="machaa-copy"
-                  type="button"
-                  data-copy="What timeline should I expect for feedback?"
-                >
-                  Copy ask-back
-                </button>
-              </div>
-            </div>
-          </div>
         </div>
-      </section>
 
-      <section class="machaa-branch">
-        <div class="machaa-section-title">Branch Cards</div>
-        <div class="machaa-branch-grid">
-          <button class="machaa-branch-btn" type="button" data-branch="intro">
-            Vendor asked: Introduce yourself
-          </button>
-          <button class="machaa-branch-btn" type="button" data-branch="visa">
-            Vendor asked: Visa / Passport
-          </button>
-          <button class="machaa-branch-btn" type="button" data-branch="jd">
-            Vendor started JD directly
-          </button>
-        </div>
-        <div class="machaa-branch-card" id="machaaBranchCard"></div>
-      </section>
+        <!-- ZONE B: MID ZONE (55%) -->
+        <div id="midZone">
+            <!-- Left: Flow Graph (60%) -->
+            <div id="flowGraphContainer">
+                <svg id="flowGraph" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Define styles -->
+                    <defs>
+                        <style>
+                            .gate-node { cursor: pointer; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+                            .gate-node:hover .gate-circle { 
+                                stroke-width: 4; 
+                                filter: drop-shadow(0 4px 12px rgba(255, 200, 61, 0.5)); 
+                                transform: scale(1.15); 
+                            }
+                            .gate-circle { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+                            .gate-circle.gray { 
+                                fill: rgba(18, 28, 47, 0.7); 
+                                stroke: rgba(255, 200, 61, 0.3); 
+                                stroke-width: 2; 
+                            }
+                            .gate-circle.blue { 
+                                fill: url(#blueGradient); 
+                                stroke: #ffc83d; 
+                                stroke-width: 3; 
+                                filter: drop-shadow(0 0 12px rgba(255, 200, 61, 0.6)); 
+                                animation: gate-active-pulse 2s ease-in-out infinite;
+                            }
+                            .gate-circle.green { 
+                                fill: url(#greenGradient); 
+                                stroke: #3affc3; 
+                                stroke-width: 3; 
+                                filter: drop-shadow(0 0 12px rgba(58, 255, 195, 0.6)); 
+                            }
+                            .gate-circle.red { 
+                                fill: url(#redGradient); 
+                                stroke: #ff6b6b; 
+                                stroke-width: 3; 
+                                filter: drop-shadow(0 0 12px rgba(255, 107, 107, 0.6)); 
+                            }
+                            .gate-text { 
+                                font-size: 12px; 
+                                font-weight: 700; 
+                                fill: #f5f7fa; 
+                                text-anchor: middle; 
+                                pointer-events: none; 
+                                transition: all 0.3s; 
+                            }
+                            .gate-text.active { 
+                                fill: #ffc83d; 
+                                text-shadow: 0 0 8px rgba(255, 200, 61, 0.8); 
+                                filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+                            }
+                            .branch-line { 
+                                stroke: rgba(255, 200, 61, 0.3); 
+                                stroke-width: 2; 
+                                fill: none; 
+                                opacity: 0.5; 
+                            }
+                            .branch-text { 
+                                font-size: 10px; 
+                                fill: rgba(245, 247, 250, 0.7); 
+                                font-weight: 600; 
+                            }
+                            
+                            @keyframes gate-active-pulse {
+                                0%, 100% {
+                                    filter: drop-shadow(0 0 12px rgba(255, 200, 61, 0.6));
+                                }
+                                50% {
+                                    filter: drop-shadow(0 0 20px rgba(255, 200, 61, 0.9));
+                                }
+                            }
+                        </style>
+                        <!-- Gradients for gates -->
+                        <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#ffc83d;stop-opacity:0.9" />
+                            <stop offset="100%" style="stop-color:#ff9f0a;stop-opacity:1" />
+                        </linearGradient>
+                        <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#3affc3;stop-opacity:0.9" />
+                            <stop offset="100%" style="stop-color:#0ed29d;stop-opacity:1" />
+                        </linearGradient>
+                        <linearGradient id="redGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:0.9" />
+                            <stop offset="100%" style="stop-color:#ee5a52;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
 
-      <section class="machaa-library">
-        <div class="machaa-section-title">Cheat Sheet Library</div>
-        <div class="machaa-library-scroll">
-          <details open>
-            <summary>Interview Cheat Sheet</summary>
-            <div class="machaa-library-body">
-              <h4>Key Talking Points</h4>
-              <ul>
-                <li>
-                  Start with context: confirm role, team size, current roadmap
-                </li>
-                <li>Ask about biggest pain points or challenges</li>
-                <li>Align candidate experience to team needs</li>
-                <li>Close with hiring timeline and next steps</li>
-              </ul>
-              <h4>Questions to Ask</h4>
-              <ul>
-                <li>
-                  What does success look like in the first 30, 60, and 90 days?
-                </li>
-                <li>
-                  What are the current technical challenges the team is facing?
-                </li>
-                <li>How does the team collaborate and communicate daily?</li>
-              </ul>
-              <h4>Common Objections</h4>
-              <ul>
-                <li>
-                  Concern about scope: Reframe around outcomes and proven
-                  delivery cadence. Offer to share decision docs or examples.
-                </li>
-                <li>
-                  Technical depth questions: Highlight systems design thinking
-                  and measurable impact on past projects.
-                </li>
-              </ul>
-              <h4>Key Metrics to Mention</h4>
-              <ul>
-                <li>Performance improvements delivered</li>
-                <li>Team velocity and ship cadence</li>
-                <li>User satisfaction or retention gains</li>
-                <li>Cross-functional collaboration examples</li>
-              </ul>
-              <h4>Closing Notes</h4>
-              <ul>
-                <li>
-                  Confirm next steps clearly. Ask for feedback on fit. Express
-                  enthusiasm for the role and team mission.
-                </li>
-              </ul>
+                    <!-- Center trunk -->
+                    <line x1="200" y1="40" x2="200" y2="560" class="branch-line" />
+
+                    <!-- Gate 1: JD Gate -->
+                    <g class="gate-node" data-gate="1" transform="translate(200, 50)">
+                        <circle class="gate-circle gray" cx="0" cy="0" r="28" />
+                        <text class="gate-text" y="5">JD Gate</text>
+                    </g>
+                    <line x1="228" y1="50" x2="280" y2="50" class="branch-line" />
+                    <text x="285" y="53" class="branch-text">NO → Exit</text>
+                    <line x1="172" y1="50" x2="120" y2="50" class="branch-line" />
+                    <text x="115" y="53" class="branch-text" text-anchor="end">YES</text>
+
+                    <!-- Gate 2: Role Alignment -->
+                    <g class="gate-node" data-gate="2" transform="translate(200, 130)">
+                        <circle class="gate-circle gray" cx="0" cy="0" r="28" />
+                        <text class="gate-text" y="5">Role</text>
+                    </g>
+                    <line x1="228" y1="130" x2="280" y2="130" class="branch-line" />
+                    <text x="285" y="133" class="branch-text">NO → Exit</text>
+                    <line x1="172" y1="130" x2="120" y2="130" class="branch-line" />
+                    <text x="115" y="133" class="branch-text" text-anchor="end">YES</text>
+
+                    <!-- Gate 3: Structure Gate -->
+                    <g class="gate-node" data-gate="3" transform="translate(200, 210)">
+                        <circle class="gate-circle gray" cx="0" cy="0" r="28" />
+                        <text class="gate-text" y="5">Structure</text>
+                    </g>
+                    <line x1="172" y1="210" x2="120" y2="240" class="branch-line" />
+                    <text x="115" y="243" class="branch-text" text-anchor="end">C2C</text>
+                    <line x1="228" y1="210" x2="280" y2="240" class="branch-line" />
+                    <text x="285" y="243" class="branch-text">W2</text>
+
+                    <!-- Gate 4: Rate Gate -->
+                    <g class="gate-node" data-gate="4" transform="translate(200, 290)">
+                        <circle class="gate-circle gray" cx="0" cy="0" r="28" />
+                        <text class="gate-text" y="5">Rate</text>
+                    </g>
+                    <line x1="228" y1="290" x2="280" y2="290" class="branch-line" />
+                    <text x="285" y="293" class="branch-text">NO → Negotiate</text>
+                    <line x1="172" y1="290" x2="120" y2="290" class="branch-line" />
+                    <text x="115" y="293" class="branch-text" text-anchor="end">YES</text>
+
+                    <!-- Gate 5: Docs Gate -->
+                    <g class="gate-node" data-gate="5" transform="translate(200, 370)">
+                        <circle class="gate-circle gray" cx="0" cy="0" r="28" />
+                        <text class="gate-text" y="5">Docs</text>
+                    </g>
+                    <line x1="228" y1="370" x2="280" y2="370" class="branch-line" />
+                    <text x="285" y="373" class="branch-text">NO → Hold</text>
+                    <line x1="172" y1="370" x2="120" y2="370" class="branch-line" />
+                    <text x="115" y="373" class="branch-text" text-anchor="end">YES</text>
+
+                    <!-- Gate 6: RTR Gate -->
+                    <g class="gate-node" data-gate="6" transform="translate(200, 450)">
+                        <circle class="gate-circle gray" cx="0" cy="0" r="28" />
+                        <text class="gate-text" y="5">RTR</text>
+                    </g>
+                    <line x1="228" y1="450" x2="280" y2="450" class="branch-line" />
+                    <text x="285" y="453" class="branch-text">NO → Wait</text>
+                    <line x1="172" y1="450" x2="120" y2="450" class="branch-line" />
+                    <text x="115" y="453" class="branch-text" text-anchor="end">YES</text>
+
+                    <!-- Gate 7: Close -->
+                    <g class="gate-node" data-gate="7" transform="translate(200, 530)">
+                        <circle class="gate-circle gray" cx="0" cy="0" r="28" />
+                        <text class="gate-text" y="5">Close</text>
+                    </g>
+                </svg>
             </div>
-          </details>
+
+            <!-- Right: Next 5 Questions (40%) -->
+            <div id="next5Container">
+                <h3 class="zone-title">Next 5 Questions</h3>
+                <div id="next5List">
+                    <!-- Questions will be dynamically populated -->
+                </div>
+            </div>
         </div>
-      </section>
+
+        <!-- ZONE C: BOTTOM ARSENAL BAR (25%) -->
+        <div id="bottomBar">
+            <!-- Left: Group Pill Matrix -->
+            <div id="groupMatrix">
+                <h4 class="arsenal-title">Question Groups</h4>
+                <div class="group-pills">
+                    <button class="group-pill" data-group="1">G1 Opening (7)</button>
+                    <button class="group-pill" data-group="2">G2 Screening (8)</button>
+                    <button class="group-pill" data-group="3">G3 JD Clarity (6)</button>
+                    <button class="group-pill" data-group="4">G4 Requirement (9)</button>
+                    <button class="group-pill" data-group="5">G5 Structure (7)</button>
+                    <button class="group-pill" data-group="6">G6 Rate (10)</button>
+                    <button class="group-pill" data-group="7">G7 Docs (8)</button>
+                    <button class="group-pill" data-group="8">G8 Visa (6)</button>
+                    <button class="group-pill" data-group="9">G9 Timeline (7)</button>
+                    <button class="group-pill" data-group="10">G10 Close (6)</button>
+                    <button class="group-pill" data-group="11">G11 Red Flags (8)</button>
+                </div>
+            </div>
+
+            <!-- Right: Mini Cheat Sheet -->
+            <div id="miniCheatSheet">
+                <h4 class="arsenal-title">Interview Cheat Sheet</h4>
+                <div class="cheat-content">
+                    <div class="cheat-section">
+                        <strong>Key Points:</strong>
+                        <span>1) Confirm role/team 2) Ask pain points 3) Align experience</span>
+                    </div>
+                    <div class="cheat-section">
+                        <strong>Objections:</strong>
+                        <span>Scope → Outcomes; Depth → Systems & Impact</span>
+                    </div>
+                    <div class="cheat-section">
+                        <strong>Metrics:</strong>
+                        <span>Performance gains • Velocity • Retention • Collaboration</span>
+                    </div>
+                    <div class="cheat-section">
+                        <strong>Closing:</strong>
+                        <span>Confirm next steps • Ask for feedback</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="machaa-toast" id="machaaToast" role="status">Copied</div>
-    <script src="/static/machaa_portrait.js"></script>
-  </body>
+    <!-- Drawer Overlay -->
+    <div id="drawerOverlay" class="hidden">
+        <div id="drawerContent">
+            <div class="drawer-header">
+                <h3 id="drawerTitle">Group Questions</h3>
+                <button id="drawerClose" class="close-btn">✕</button>
+            </div>
+            <div class="drawer-search">
+                <input type="text" id="drawerSearch" placeholder="Search questions...">
+            </div>
+            <div id="drawerBody">
+                <!-- Questions will be populated dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="hidden">Copied</div>
+
+    <script src="/static/machaa_portrait.js?v=202602121640"></script></script>
+</body>
 </html>
