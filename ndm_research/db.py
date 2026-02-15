@@ -78,7 +78,9 @@ def init_db() -> None:
             );
             CREATE TABLE IF NOT EXISTS research_recordings (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                call_id INTEGER,
                 phone_digits TEXT NOT NULL,
+                audio_path TEXT,
                 file_path TEXT NOT NULL,
                 created_at TEXT,
                 duration_sec INTEGER DEFAULT 0
@@ -98,6 +100,15 @@ def init_db() -> None:
             "UPDATE calls SET last10 = substr(phone_digits, -10) "
             "WHERE (last10 IS NULL OR last10 = '') AND phone_digits IS NOT NULL"
         )
+        recording_columns = [row[1] for row in conn.execute("PRAGMA table_info(research_recordings)")]
+        if "call_id" not in recording_columns:
+            conn.execute("ALTER TABLE research_recordings ADD COLUMN call_id INTEGER")
+        if "audio_path" not in recording_columns:
+            conn.execute("ALTER TABLE research_recordings ADD COLUMN audio_path TEXT")
+        if "file_path" not in recording_columns:
+            conn.execute("ALTER TABLE research_recordings ADD COLUMN file_path TEXT")
+        if "duration_sec" not in recording_columns:
+            conn.execute("ALTER TABLE research_recordings ADD COLUMN duration_sec INTEGER DEFAULT 0")
 
         conn.execute(
             "CREATE INDEX IF NOT EXISTS idx_calls_phone_digits ON calls(phone_digits)"
@@ -337,7 +348,15 @@ def list_recordings(
 ) -> List[Dict[str, Any]]:
     rows = conn.execute(
         """
-        SELECT * FROM research_recordings
+        SELECT
+            id,
+            call_id,
+            phone_digits,
+            COALESCE(audio_path, file_path) AS audio_path,
+            COALESCE(file_path, audio_path) AS file_path,
+            created_at,
+            duration_sec
+        FROM research_recordings
         WHERE phone_digits = ?
         ORDER BY created_at DESC
         """,

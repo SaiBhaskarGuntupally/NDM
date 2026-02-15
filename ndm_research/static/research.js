@@ -392,10 +392,10 @@ function renderEmails(items) {
   });
 }
 
-function renderRecordings(recordings, calls) {
+function renderRecordings(recordings) {
   if (!recordingsList) return;
   recordingsList.innerHTML = "";
-  const items = recordings && recordings.length ? recordings : calls || [];
+  const items = recordings || [];
   if (!items || items.length === 0) {
     setEmpty(recordingsList, "No recordings yet.");
     return;
@@ -411,14 +411,19 @@ function renderRecordings(recordings, calls) {
         <path d="M8 6l10 6-10 6z" fill="currentColor" />
       </svg>
     `;
+    const audioPath = item.audio_path || item.file_path || "";
+    if (audioPath) {
+      play.style.cursor = "pointer";
+      play.addEventListener("click", () => {
+        window.open(audioPath, "_blank", "noopener,noreferrer");
+      });
+    }
 
     const name = document.createElement("div");
     name.className = "recording-name";
-    name.textContent = item.file_path
-      ? item.file_path.split("/").pop()
-      : item.audio_path
-        ? item.audio_path.split("/").pop()
-        : `Call_${item.id}`;
+    name.textContent = audioPath
+      ? audioPath.split("/").pop()
+      : `Call_${item.call_id || item.id}`;
 
     const time = document.createElement("div");
     time.className = "recording-time";
@@ -432,9 +437,10 @@ function renderRecordings(recordings, calls) {
       </svg>
     `;
     trash.addEventListener("click", async () => {
-      if (!item.id) return;
+      const callId = item.call_id || item.id;
+      if (!callId) return;
       if (!confirm("Delete this call?")) return;
-      await fetchJson(`/research/call/${item.id}`, { method: "DELETE" });
+      await fetchJson(`/research/call/${callId}`, { method: "DELETE" });
       await refreshWorkspace();
     });
 
@@ -521,7 +527,7 @@ function renderWorkspace(payload) {
   if (summaryCount) summaryCount.textContent = payload.call_count || 0;
   renderNotes(payload.notes || []);
   renderEmails(payload.emails || []);
-  renderRecordings(payload.recordings || [], payload.calls || []);
+  renderRecordings(payload.recordings || []);
   updateEmptyState(payload);
 }
 

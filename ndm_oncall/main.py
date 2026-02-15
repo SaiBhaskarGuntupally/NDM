@@ -89,7 +89,13 @@ async def incoming_call(payload: IncomingCall, request: Request):
     logger.info("GMAIL_QUERY %s", query)
 
     global ACTIVE_CALL_ID, ACTIVE_PHONE_DIGITS
-    if RECORDING_MANAGER.active and payload.digits == ACTIVE_PHONE_DIGITS and ACTIVE_CALL_ID:
+    if (
+        RECORDING_MANAGER.active
+        and payload.digits == ACTIVE_PHONE_DIGITS
+        and RECORDING_MANAGER.active_call_id
+    ):
+        active_call_id = int(RECORDING_MANAGER.active_call_id)
+        ACTIVE_CALL_ID = active_call_id
         recent_calls = _sanitize_calls(db.list_recent_calls(limit=20))
         opportunity = db.get_opportunity(payload.digits)
         emails_cached = _apply_mailbox_context(db.list_email_links(payload.digits))
@@ -97,13 +103,13 @@ async def incoming_call(payload: IncomingCall, request: Request):
             "incoming_call_workspace",
             {
                 "phone_digits": payload.digits,
-                "call_id": ACTIVE_CALL_ID,
+                "call_id": active_call_id,
                 "display_name": None,
                 "recent_calls": recent_calls,
                 "notes": [],
                 "opportunity": opportunity,
                 "emails": emails_cached,
-        "recording_active": False,
+                "recording_active": _recording_active_for_call(active_call_id),
             },
         )
         return {"ok": True, "results": []}
@@ -124,7 +130,7 @@ async def incoming_call(payload: IncomingCall, request: Request):
             "notes": [],
             "opportunity": opportunity,
             "emails": emails_cached,
-            "recording_active": False,
+            "recording_active": _recording_active_for_call(call_id),
         },
     )
     t2 = time.perf_counter()
@@ -294,12 +300,25 @@ def _audio_path_if_valid(audio_path: Optional[str]) -> Optional[str]:
     if not audio_path:
         return None
     try:
-        file_path = RECORDINGS_DIR / Path(audio_path).name
+        normalized = str(audio_path).replace("\\", "/")
+        prefix = "/recordings/"
+        if not normalized.startswith(prefix):
+            return None
+        rel = normalized[len(prefix):].strip("/")
+        if not rel:
+            return None
+        file_path = (RECORDINGS_DIR / rel).resolve()
+        base_dir = RECORDINGS_DIR.resolve()
+        try:
+            file_path.relative_to(base_dir)
+        except ValueError:
+            return None
         if not file_path.exists():
             return None
         if file_path.stat().st_size <= 1024:
             return None
-        return audio_path
+        rel_norm = rel.replace("\\", "/")
+        return f"/recordings/{rel_norm}"
     except Exception:  # noqa: BLE001
         return None
 
@@ -326,7 +345,49 @@ def _apply_mailbox_context(emails: List[dict]) -> List[dict]:
 
 
 def _recording_active_for_call(call_id: Optional[int]) -> bool:
-    return bool(RECORDING_MANAGER.active and call_id and call_id == ACTIVE_CALL_ID)
+    if not call_id:
+        return False
+    return RECORDING_MANAGER.is_active_for_call(int(call_id))
+
+
+def _public_audio_path_for_call(call_id: int, path_value: Optional[str]) -> Optional[str]:
+    if not path_value:
+        return None
+    try:
+        path_obj = Path(path_value)
+        if not path_obj.exists():
+            return None
+        expected_dir = (RECORDINGS_DIR / str(call_id)).resolve()
+        resolved = path_obj.resolve()
+        try:
+            resolved.relative_to(expected_dir)
+        except ValueError:
+            return None
+        if path_obj.name not in {"mic.wav", "system.wav"}:
+            return None
+        return f"/recordings/{call_id}/{path_obj.name}"
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def _recording_response(
+    *,
+    ok: bool,
+    call_id: int,
+    recording_active: bool,
+    audio_paths: Optional[dict] = None,
+    reason: Optional[str] = None,
+) -> dict:
+    response = {
+        "ok": bool(ok),
+        "call_id": str(call_id),
+        "recording_active": bool(recording_active),
+    }
+    if audio_paths:
+        response["audio_paths"] = audio_paths
+    if reason:
+        response["reason"] = reason
+    return response
 
 
 @app.get("/health")
@@ -345,40 +406,130 @@ def add_note(payload: dict):
     return {"ok": True, "notes": notes}
 
 
-@app.post("/recording/stop")
-def stop_recording(payload: dict):
-    call_id = payload.get("call_id")
-    if not call_id:
-        return {"ok": False, "error": "call_id required"}
+@app.post("/recording/start")
+def start_recording(call_id: int):
+    call = db.get_call_by_id(int(call_id))
+    if not call:
+        return _recording_response(
+            ok=False,
+            call_id=int(call_id),
+            recording_active=_recording_active_for_call(int(call_id)),
+            reason="call_not_found",
+        )
 
     global ACTIVE_CALL_ID, ACTIVE_PHONE_DIGITS
-    rec_result = RECORDING_MANAGER.stop()
-    if rec_result.ok:
-        candidate_paths = [rec_result.sys_path, rec_result.mic_path]
-        valid_path = None
-        for candidate in candidate_paths:
-            if not candidate:
-                continue
-            try:
-                if Path(candidate).exists() and Path(candidate).stat().st_size > 1024:
-                    valid_path = candidate
-                    break
-            except Exception:  # noqa: BLE001
-                continue
-        if valid_path:
-            db.update_call_audio(int(call_id), f"/recordings/{Path(valid_path).name}")
-        db.update_call_end(int(call_id))
+    rec_result = RECORDING_MANAGER.start(
+        call_id=int(call_id),
+        phone_digits=call.get("phone_digits", ""),
+    )
+    if not rec_result.ok:
+        return _recording_response(
+            ok=False,
+            call_id=int(call_id),
+            recording_active=_recording_active_for_call(int(call_id)),
+            reason=rec_result.reason,
+        )
+
+    ACTIVE_CALL_ID = int(call_id)
+    ACTIVE_PHONE_DIGITS = call.get("phone_digits")
+    audio_paths = {}
+    mic_public = _public_audio_path_for_call(int(call_id), rec_result.mic_path)
+    sys_public = _public_audio_path_for_call(int(call_id), rec_result.sys_path)
+    if mic_public:
+        audio_paths["mic_path"] = mic_public
+    if sys_public:
+        audio_paths["sys_path"] = sys_public
+    emit_event(
+        "recording_started",
+        {
+            "call_id": int(call_id),
+            "recording_active": _recording_active_for_call(int(call_id)),
+            "audio_paths": audio_paths,
+        },
+    )
+    return _recording_response(
+        ok=True,
+        call_id=int(call_id),
+        recording_active=_recording_active_for_call(int(call_id)),
+        audio_paths=audio_paths or None,
+    )
+
+
+@app.post("/recording/stop")
+def stop_recording(call_id: int):
+    global ACTIVE_CALL_ID, ACTIVE_PHONE_DIGITS
+    rec_result = RECORDING_MANAGER.stop(int(call_id))
+    if not rec_result.ok:
+        return _recording_response(
+            ok=False,
+            call_id=int(call_id),
+            recording_active=_recording_active_for_call(int(call_id)),
+            reason=rec_result.reason,
+        )
+
+    audio_paths: dict = {}
+    mic_public = _public_audio_path_for_call(int(call_id), rec_result.mic_path)
+    sys_public = _public_audio_path_for_call(int(call_id), rec_result.sys_path)
+    if mic_public:
+        audio_paths["mic_path"] = mic_public
+    if sys_public:
+        audio_paths["sys_path"] = sys_public
+
+    selected_path = audio_paths.get("sys_path") or audio_paths.get("mic_path")
+    if selected_path:
+        db.update_call_audio(int(call_id), selected_path)
+    db.update_call_end(int(call_id))
+
+    call = db.get_call_by_id(int(call_id))
+    if call and selected_path:
+        db.add_research_recording(
+            call_id=int(call_id),
+            phone_digits=call.get("phone_digits", ""),
+            audio_path=selected_path,
+            duration_sec=int(rec_result.duration_sec or 0),
+        )
+
+    if ACTIVE_CALL_ID == int(call_id):
         ACTIVE_CALL_ID = None
         ACTIVE_PHONE_DIGITS = None
-        emit_event(
-            "recording_stopped",
-            {
-                "call_id": call_id,
-                "mic_path": rec_result.mic_path,
-                "sys_path": rec_result.sys_path,
-            },
-        )
-    return {"ok": rec_result.ok, "error": rec_result.error}
+
+    recording_active = _recording_active_for_call(int(call_id))
+    emit_event(
+        "recording_stopped",
+        {
+            "call_id": int(call_id),
+            "recording_active": recording_active,
+            "audio_paths": audio_paths,
+        },
+    )
+    return _recording_response(
+        ok=True,
+        call_id=int(call_id),
+        recording_active=recording_active,
+        audio_paths=audio_paths or None,
+    )
+
+
+@app.get("/recording/status")
+def recording_status(call_id: int):
+    status = RECORDING_MANAGER.status(int(call_id))
+    recording_active = bool(status.get("recording_active"))
+    response = _recording_response(
+        ok=True,
+        call_id=int(call_id),
+        recording_active=recording_active,
+        reason=status.get("reason"),
+    )
+    raw_paths = status.get("audio_paths") or {}
+    mic_public = _public_audio_path_for_call(int(call_id), raw_paths.get("mic_path"))
+    sys_public = _public_audio_path_for_call(int(call_id), raw_paths.get("sys_path"))
+    if mic_public or sys_public:
+        response["audio_paths"] = {}
+        if mic_public:
+            response["audio_paths"]["mic_path"] = mic_public
+        if sys_public:
+            response["audio_paths"]["sys_path"] = sys_public
+    return response
 
 
 @app.get("/workspace/{phone_digits}")
@@ -397,7 +548,7 @@ def workspace(phone_digits: str):
         "opportunity": opportunity,
         "emails": emails,
         "current_call_id": current_call_id,
-        "recording_active": False,
+        "recording_active": _recording_active_for_call(current_call_id),
     }
 
 

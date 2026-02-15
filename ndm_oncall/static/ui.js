@@ -21,6 +21,7 @@ const emailsRecentListEl = document.getElementById("emailsRecentList");
 const emailsRelatedListEl = document.getElementById("emailsRelatedList");
 const emailsRecentEl = document.getElementById("emailsRecent");
 const emailsRelatedEl = document.getElementById("emailsRelated");
+const startRecordingBtn = document.getElementById("startRecording");
 const stopRecordingBtn = document.getElementById("stopRecording");
 const toastEl = document.getElementById("toast");
 const toastCloseBtn = document.getElementById("toastClose");
@@ -45,8 +46,17 @@ async function exitKioskMode() {
   isKioskMode = false;
 }
 
-stopRecordingBtn.disabled = true;
-stopRecordingBtn.style.display = "none";
+function setRecordingButtons(recordingActive) {
+  const hasCall = !!currentCallId;
+  if (startRecordingBtn) {
+    startRecordingBtn.disabled = !hasCall || !!recordingActive;
+  }
+  if (stopRecordingBtn) {
+    stopRecordingBtn.disabled = !hasCall || !recordingActive;
+  }
+}
+
+setRecordingButtons(false);
 
 function setActiveTab(tab) {
   document.querySelectorAll(".tab").forEach((btn) => {
@@ -343,12 +353,69 @@ function hideToast() {
   toastEl.classList.add("hidden");
 }
 
+async function refreshRecordingStatus() {
+  if (!currentCallId) {
+    setRecordingButtons(false);
+    return;
+  }
+  try {
+    const res = await fetch(
+      `/recording/status?call_id=${encodeURIComponent(currentCallId)}`,
+    );
+    const data = await res.json();
+    setRecordingButtons(!!data.recording_active);
+  } catch (err) {
+    setRecordingButtons(false);
+  }
+}
+
+async function startRecording() {
+  if (!currentCallId) return;
+  try {
+    const res = await fetch(
+      `/recording/start?call_id=${encodeURIComponent(currentCallId)}`,
+      { method: "POST" },
+    );
+    const data = await res.json();
+    setRecordingButtons(!!data.recording_active);
+    if (data.ok) {
+      statusEl.textContent = `Recording started: ${currentCallId}`;
+    } else {
+      statusEl.textContent = `Recording start failed: ${data.reason || "error"}`;
+    }
+  } catch (err) {
+    statusEl.textContent = "Recording start failed.";
+    setRecordingButtons(false);
+  }
+}
+
+async function stopRecording() {
+  if (!currentCallId) return;
+  try {
+    const res = await fetch(
+      `/recording/stop?call_id=${encodeURIComponent(currentCallId)}`,
+      { method: "POST" },
+    );
+    const data = await res.json();
+    setRecordingButtons(!!data.recording_active);
+    if (data.ok) {
+      statusEl.textContent = `Recording stopped: ${currentCallId}`;
+      await fetchCallHistory(currentPhoneDigits);
+    } else {
+      statusEl.textContent = `Recording stop failed: ${data.reason || "error"}`;
+    }
+  } catch (err) {
+    statusEl.textContent = "Recording stop failed.";
+    setRecordingButtons(true);
+  }
+}
+
 async function loadWorkspace(phoneDigits) {
   const res = await fetch(`/workspace/${phoneDigits}`);
   const data = await res.json();
   currentPhoneDigits = phoneDigits;
   currentCallId = data.current_call_id || null;
-  stopRecordingBtn.disabled = !data.recording_active;
+  setRecordingButtons(!!data.recording_active);
   renderCaller({ phone_digits: phoneDigits, display_name: data.display_name });
   setSeenBadge(false);
   await fetchCallHistory(phoneDigits);
@@ -357,6 +424,7 @@ async function loadWorkspace(phoneDigits) {
   if (!renderGmailFromState()) {
     renderEmails(data.emails || []);
   }
+  await refreshRecordingStatus();
   statusEl.textContent = `Workspace ready: ${phoneDigits}`;
 }
 
@@ -385,6 +453,8 @@ async function saveNote() {
 }
 
 saveNoteBtn.addEventListener("click", saveNote);
+startRecordingBtn?.addEventListener("click", startRecording);
+stopRecordingBtn?.addEventListener("click", stopRecording);
 
 noteInput.addEventListener("keydown", (e) => {
   if (e.ctrlKey && e.key === "Enter") saveNote();
@@ -427,7 +497,7 @@ evtSource.addEventListener("incoming_call_workspace", (event) => {
   if (!renderGmailFromState()) {
     renderEmails(data.emails || []);
   }
-  stopRecordingBtn.disabled = !data.recording_active;
+  setRecordingButtons(!!data.recording_active);
   statusEl.textContent = `Incoming call: ${data.phone_digits}`;
   showToast(data.phone_digits);
 
@@ -447,4 +517,19 @@ evtSource.addEventListener("gmail_results_ready", (event) => {
     refreshEmailsFromWorkspace();
   }
   statusEl.textContent = `Gmail results ready: ${data.phone_digits}`;
+});
+
+evtSource.addEventListener("recording_started", (event) => {
+  const data = JSON.parse(event.data);
+  if (!data.call_id || Number(data.call_id) !== Number(currentCallId)) return;
+  setRecordingButtons(true);
+  statusEl.textContent = `Recording started: ${data.call_id}`;
+});
+
+evtSource.addEventListener("recording_stopped", (event) => {
+  const data = JSON.parse(event.data);
+  if (!data.call_id || Number(data.call_id) !== Number(currentCallId)) return;
+  setRecordingButtons(false);
+  statusEl.textContent = `Recording stopped: ${data.call_id}`;
+  fetchCallHistory(currentPhoneDigits);
 });

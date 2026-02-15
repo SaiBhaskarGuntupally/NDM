@@ -90,6 +90,19 @@ def init_db() -> None:
             )
             """
         )
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS research_recordings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                call_id INTEGER,
+                phone_digits TEXT NOT NULL,
+                audio_path TEXT,
+                file_path TEXT,
+                created_at TEXT,
+                duration_sec INTEGER DEFAULT 0
+            )
+            """
+        )
         conn.commit()
 
         columns = [row[1] for row in conn.execute("PRAGMA table_info(calls)")]
@@ -106,6 +119,20 @@ def init_db() -> None:
             conn.commit()
         if "account_index" not in email_columns:
             conn.execute("ALTER TABLE email_links ADD COLUMN account_index TEXT")
+            conn.commit()
+
+        recording_columns = [row[1] for row in conn.execute("PRAGMA table_info(research_recordings)")]
+        if "call_id" not in recording_columns:
+            conn.execute("ALTER TABLE research_recordings ADD COLUMN call_id INTEGER")
+            conn.commit()
+        if "audio_path" not in recording_columns:
+            conn.execute("ALTER TABLE research_recordings ADD COLUMN audio_path TEXT")
+            conn.commit()
+        if "file_path" not in recording_columns:
+            conn.execute("ALTER TABLE research_recordings ADD COLUMN file_path TEXT")
+            conn.commit()
+        if "duration_sec" not in recording_columns:
+            conn.execute("ALTER TABLE research_recordings ADD COLUMN duration_sec INTEGER DEFAULT 0")
             conn.commit()
 
 
@@ -148,6 +175,56 @@ def update_call_audio(call_id: int, audio_path: str) -> None:
         conn.execute(
             "UPDATE calls SET audio_path = ? WHERE id = ?",
             (audio_path, call_id),
+        )
+        conn.commit()
+
+
+def get_call_by_id(call_id: int) -> Optional[Dict[str, Any]]:
+    with _connect() as conn:
+        row = conn.execute("SELECT * FROM calls WHERE id = ?", (call_id,)).fetchone()
+        if not row:
+            return None
+        data = dict(row)
+        if not data.get("last10"):
+            data["last10"] = _last10_digits(data.get("phone_digits", ""))
+        return data
+
+
+def add_research_recording(
+    call_id: int,
+    phone_digits: str,
+    audio_path: str,
+    duration_sec: int = 0,
+) -> None:
+    if not audio_path:
+        return
+    last10 = _last10_digits(phone_digits)
+    with _connect() as conn:
+        existing = conn.execute(
+            """
+            SELECT id FROM research_recordings
+            WHERE call_id = ? AND (audio_path = ? OR file_path = ?)
+            LIMIT 1
+            """,
+            (call_id, audio_path, audio_path),
+        ).fetchone()
+        if existing:
+            return
+        now = _now_iso()
+        conn.execute(
+            """
+            INSERT INTO research_recordings
+            (call_id, phone_digits, audio_path, file_path, created_at, duration_sec)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                call_id,
+                last10,
+                audio_path,
+                audio_path,
+                now,
+                int(duration_sec or 0),
+            ),
         )
         conn.commit()
 
